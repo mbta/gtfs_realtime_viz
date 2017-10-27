@@ -19,7 +19,8 @@ defmodule GTFSRealtimeViz.Mixfile do
 
   defp deps do
     [
-      {:exprotobuf, "~> 1.2.9"}
+      {:exprotobuf, "~> 1.2.9"},
+      {:phoenix_html, "~> 2.10.4"},
     ]
   end
 end
