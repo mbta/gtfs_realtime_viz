@@ -28,3 +28,17 @@ use Mix.Config
 # here (which is why it is important to import them last).
 #
 #     import_config "#{Mix.env}.exs"
+
+# e.g.
+# config :gtfs_realtime_viz, :routes, %{
+#   "Mattapan" => [
+#     ["Ashmont", "70261", "70262"],
+#     ["Cedar Grove", "70263", "70264"],
+#     ["Butler", "70265", "70266"],
+#     ["Milton", "70267", "70268"],
+#     ["Central Ave", "70269", "70270"],
+#     ["Valley Road", "70271", "70272"],
+#     ["Capen St.", "70273", "70274"],
+#     ["Mattapan", "70275", "70276"],
+#   ]
+# }

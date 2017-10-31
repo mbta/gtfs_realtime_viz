@@ -17,11 +17,17 @@ defmodule GTFSRealtimeViz do
   end
 
   def visualize(filename) do
+    routes = Application.get_env(:gtfs_realtime_viz, :routes)
+
     content =
-      [vehicles: State.vehicles()]
+      [vehicles: vehicles_by_stop_id(), routes: routes]
       |> gen_html
       |> Phoenix.HTML.safe_to_string
 
     File.write!(filename, content)
+  end
+
+  defp vehicles_by_stop_id do
+    Enum.reduce(State.vehicles(), %{}, fn v, acc -> Map.put(acc, v.stop_id, v) end)
   end
 end
