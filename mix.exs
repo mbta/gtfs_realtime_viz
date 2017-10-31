@@ -23,6 +23,7 @@ defmodule GTFSRealtimeViz.Mixfile do
 
   defp deps do
     [
+      {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:exprotobuf, "~> 1.2.9"},
       {:phoenix_html, "~> 2.10.4"},
     ]

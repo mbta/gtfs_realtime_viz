@@ -1,29 +1,37 @@
 defmodule GTFSRealtimeViz.State do
   use GenServer
 
+  alias GTFSRealtimeViz.Proto
+
+  @type state :: [Proto.vehicle_position]
+
   def start_link(opts \\ []) do
     name = Keyword.get(opts, :name, __MODULE__)
     GenServer.start_link(__MODULE__, :ok, name: name)
   end
 
-  @spec init(:ok) :: [GTFSRealtimeViz.Proto]
+  @spec init(:ok) :: {:ok, state}
   def init(:ok) do
     {:ok, []}
   end
 
   # client interface
 
-  def new_data(pid \\ __MODULE__, raw) do
+  @spec new_data(GenServer.server, Proto.raw) :: :ok
+  def new_data(pid \\ __MODULE__, raw)
+  def new_data(pid, raw) do
     vehicles =
       raw
-      |> GTFSRealtimeViz.Proto.FeedMessage.decode
+      |> Proto.FeedMessage.decode
       |> Map.get(:entity)
       |> Enum.map(& &1.vehicle)
 
     GenServer.call(pid, {:vehicles, vehicles})
   end
 
-  def vehicles(pid \\ __MODULE__) do
+  @spec vehicles(GenServer.server) :: [Proto.vehicle_position]
+  def vehicles(pid \\ __MODULE__)
+  def vehicles(pid) do
     GenServer.call(pid, :vehicles)
   end
 
