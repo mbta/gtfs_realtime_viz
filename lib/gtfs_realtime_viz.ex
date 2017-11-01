@@ -44,7 +44,7 @@ defmodule GTFSRealtimeViz do
   def trainify(vehicles, status, ascii_train) do
     vehicles
     |> Enum.filter(& &1.current_status == status)
-    |> Enum.map(fn _ -> ascii_train end)
-    |> Enum.join(" ")
+    |> Enum.map(& "#{ascii_train} (#{&1.vehicle && &1.vehicle.id})")
+    |> Enum.join(",")
   end
 end
