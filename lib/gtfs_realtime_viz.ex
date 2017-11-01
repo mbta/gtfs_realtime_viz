@@ -13,26 +13,30 @@ defmodule GTFSRealtimeViz do
   require EEx
   EEx.function_from_file :def, :gen_html, "lib/viz.eex", [:assigns], [engine: Phoenix.HTML.Engine]
 
-  @spec new_message(Proto.raw) :: :ok
-  def new_message(raw) do
-    State.new_data(raw)
+  @routes Application.get_env(:gtfs_realtime_viz, :routes)
+
+  @spec new_message(Proto.raw, String.t) :: :ok
+  def new_message(raw, comment) do
+    State.new_data(raw, comment)
   end
 
   @spec visualize() :: String.t
   def visualize do
-    routes = Application.get_env(:gtfs_realtime_viz, :routes)
-
-    [vehicles: vehicles_by_stop_id(), routes: routes]
+    [vehicle_archive: vehicles_by_stop_id(), routes: @routes]
     |> gen_html
     |> Phoenix.HTML.safe_to_string
   end
 
-  @spec vehicles_by_stop_id() :: %{required(String.t) => [Proto.vehicle_position]}
+  @spec vehicles_by_stop_id() :: [{String.t, %{required(String.t) => [Proto.vehicle_position]}}]
   defp vehicles_by_stop_id do
-    Enum.reduce(State.vehicles(), %{}, fn v, acc ->
-      update_in acc, [v.stop_id], fn vs ->
-        [v | (vs || [])]
-      end
+    Enum.map(State.vehicles(), fn {comment, vehicles} ->
+      vehicles_by_stop = Enum.reduce(vehicles, %{}, fn v, acc ->
+        update_in acc, [v.stop_id], fn vs ->
+          [v | (vs || [])]
+        end
+      end)
+
+      {comment, vehicles_by_stop}
     end)
   end
 

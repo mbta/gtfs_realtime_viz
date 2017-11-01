@@ -42,3 +42,4 @@ use Mix.Config
 #     ["Mattapan", "70275", "70276"],
 #   ]
 # }
+# config :gtfs_realtime_viz, :max_archive, 2

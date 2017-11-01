@@ -16,7 +16,8 @@ defmodule GTFSRealtimeViz.Mixfile do
       extra_applications: [:logger],
       mod: {GTFSRealtimeViz.Application, []},
       env: [
-        routes: %{}
+        routes: %{},
+        max_archive: 5,
       ]
     ]
   end

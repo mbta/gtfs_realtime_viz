@@ -10,85 +10,91 @@
   }
 </style>
 
-<h1>Visualization</h1>
+<%= for {comment, vehicles_by_stop} <- @vehicle_archive do %>
+  <div><%= comment %></div>
 
-<h2>Routes</h2>
+  <h1>Visualization</h1>
 
-<%= for {route_name, stops} <- @routes do %>
-  <h3><%= route_name %></h3>
-  <table>
-    <tr>
-      <th>Transit
-      <th>Incoming</th>
-      <th>At</th>
-      <th>Station</th>
-      <th>At</th>
-      <th>Incoming</th>
-      <th>Transit</th>
-    </tr>
+  <h2>Routes</h2>
 
-    <%= for [stop_name, stop_id_0, stop_id_1] <- stops do %>
-      <% vs0 = @vehicles[stop_id_0] || [] %>
-      <% vs1 = @vehicles[stop_id_1] || [] %>
-
+  <%= for {route_name, stops} <- @routes do %>
+    <h3><%= route_name %></h3>
+    <table>
       <tr>
-        <td><%= trainify(vs0, :IN_TRANSIT_TO, ">") %></td>
-        <td><%= trainify(vs0, :INCOMING_AT, ">") %></td>
-        <td><%= trainify(vs0, :STOPPED_AT, ">") %></td>
-        <td><%= stop_name %></td>
-        <td><%= trainify(vs1, :IN_TRANSIT_TO, "<") %></td>
-        <td><%= trainify(vs1, :INCOMING_AT, "<") %></td>
-        <td><%= trainify(vs1, :STOPPED_AT, "<") %></td>
+        <th>Transit
+        <th>Incoming</th>
+        <th>At</th>
+        <th>Station</th>
+        <th>At</th>
+        <th>Incoming</th>
+        <th>Transit</th>
       </tr>
-    <% end %>
-  </table>
-<% end %>
 
-<h2>All Vehicle Location Data</h2>
-<div>
-  <table>
-    <thead>
-      <tr>
-        <th>Route ID</th>
-        <th>Trip ID</th>
-        <th>Sched. Relationship</th>
-        <th>Stop ID</th>
-        <th>Status</th>
-        <th>Stop Seq.</th>
-        <th>Position</th>
-        <th>Veh. ID</th>
-        <th>Veh. Label</th>
-      </tr>
-    </thead>
-    <tbody>
-      <%= for {_id, vehicles} <- @vehicles, vehicle <- vehicles do %>
+      <%= for [stop_name, stop_id_0, stop_id_1] <- stops do %>
+        <% vs0 = vehicles_by_stop[stop_id_0] || [] %>
+        <% vs1 = vehicles_by_stop[stop_id_1] || [] %>
+
         <tr>
-          <%= if (trip = vehicle.trip) do %>
-            <td><%= trip.route_id %></td>
-            <td><%= trip.trip_id %></td>
-            <td><%= trip.schedule_relationship %></td>
-          <% else %>
-            <td>n/a</td>
-            <td>n/a</td>
-            <td>n/a</td>
-          <% end %>
-          <td><%= vehicle.stop_id %></td>
-          <td><%= vehicle.current_status %></td>
-          <td><%= vehicle.current_stop_sequence %></td>
-          <%= if (pos = vehicle.position) do %>
-            <td><%= "(#{Float.round(pos.latitude, 5)}, #{Float.round(pos.longitude, 5)})" %></td>
-          <% else %>
-            <td>n/a</td>
-          <% end %>
-          <%= if (veh = vehicle.vehicle) do %>
-            <td><%= veh.id %></td>
-            <td><%= veh.label %></td>
-          <% else %>
-            <td>n/a</td>
-            <td>n/a</td>
-          <% end %>
+          <td><%= trainify(vs0, :IN_TRANSIT_TO, ">") %></td>
+          <td><%= trainify(vs0, :INCOMING_AT, ">") %></td>
+          <td><%= trainify(vs0, :STOPPED_AT, ">") %></td>
+          <td><%= stop_name %></td>
+          <td><%= trainify(vs1, :IN_TRANSIT_TO, "<") %></td>
+          <td><%= trainify(vs1, :INCOMING_AT, "<") %></td>
+          <td><%= trainify(vs1, :STOPPED_AT, "<") %></td>
         </tr>
       <% end %>
-    </tbody>
-  </table>
-</div>
+    </table>
+  <% end %>
+
+  <h2>All Vehicle Location Data</h2>
+  <div>
+    <table>
+      <thead>
+        <tr>
+          <th>Route ID</th>
+          <th>Trip ID</th>
+          <th>Sched. Relationship</th>
+          <th>Stop ID</th>
+          <th>Status</th>
+          <th>Stop Seq.</th>
+          <th>Position</th>
+          <th>Veh. ID</th>
+          <th>Veh. Label</th>
+        </tr>
+      </thead>
+      <tbody>
+        <%= for {_id, vehicles} <- vehicles_by_stop, vehicle <- vehicles do %>
+          <tr>
+            <%= if (trip = vehicle.trip) do %>
+              <td><%= trip.route_id %></td>
+              <td><%= trip.trip_id %></td>
+              <td><%= trip.schedule_relationship %></td>
+            <% else %>
+              <td>n/a</td>
+              <td>n/a</td>
+              <td>n/a</td>
+            <% end %>
+            <td><%= vehicle.stop_id %></td>
+            <td><%= vehicle.current_status %></td>
+            <td><%= vehicle.current_stop_sequence %></td>
+            <%= if (pos = vehicle.position) do %>
+              <td><%= "(#{Float.round(pos.latitude, 5)}, #{Float.round(pos.longitude, 5)})" %></td>
+            <% else %>
+              <td>n/a</td>
+            <% end %>
+            <%= if (veh = vehicle.vehicle) do %>
+              <td><%= veh.id %></td>
+              <td><%= veh.label %></td>
+            <% else %>
+              <td>n/a</td>
+              <td>n/a</td>
+            <% end %>
+          </tr>
+        <% end %>
+      </tbody>
+    </table>
+  </div>
+
+  <hr>
+<% end %>
