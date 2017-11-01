@@ -27,8 +27,20 @@ defmodule GTFSRealtimeViz do
     |> Phoenix.HTML.safe_to_string
   end
 
-  @spec vehicles_by_stop_id() :: %{required(String.t) => Proto.vehicle_position}
+  @spec vehicles_by_stop_id() :: %{required(String.t) => [Proto.vehicle_position]}
   defp vehicles_by_stop_id do
-    Enum.reduce(State.vehicles(), %{}, fn v, acc -> Map.put(acc, v.stop_id, v) end)
+    Enum.reduce(State.vehicles(), %{}, fn v, acc ->
+      update_in acc, [v.stop_id], fn vs ->
+        [v | (vs || [])]
+      end
+    end)
+  end
+
+  @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: String.t
+  def trainify(vehicles, status, ascii_train) do
+    vehicles
+    |> Enum.filter(& &1.current_status == status)
+    |> Enum.map(fn _ -> ascii_train end)
+    |> Enum.join(" ")
   end
 end

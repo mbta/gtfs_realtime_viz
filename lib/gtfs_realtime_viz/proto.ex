@@ -46,13 +46,15 @@ defmodule GTFSRealtimeViz.Proto do
     schedule_relationship: nil | :SCHEDULED | :SKIPPED | :NO_DATA
   }
 
+  @type vehicle_position_statuses :: :INCOMING_AT | :STOPPED_AT | :IN_TRANSIT_TO
+
   @type vehicle_position :: %Proto.VehiclePosition{
     trip: nil | trip_descriptor,
     vehicle: nil | vehicle_descriptor,
     position: nil | position,
     current_stop_sequence: nil | integer,
     stop_id: nil | String.t,
-    current_status: nil | :INCOMING_AT | :STOPPED_AT | :IN_TRANSIT_TO,
+    current_status: nil | vehicle_position_statuses,
     timestamp: nil | integer,
     congestion_level: nil | :UNKNOWN_CONGESTION_LEVEL | :RUNNING_SMOOTHLY | :STOP_AND_GO | :CONGESTION | :SEVERE_CONGESTION,
     occupancy_status: nil | :EMPTY | :MANY_SEATS_AVAILABLE | :FEW_SEATS_AVAILABLE | :STANDING_ROOM_ONLY | :CRUSHED_STANDING_ROOM_ONLY | :FULL | :NOT_ACCEPTING_PASSENGERS,

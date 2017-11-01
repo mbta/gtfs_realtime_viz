@@ -28,17 +28,17 @@
     </tr>
 
     <%= for [stop_name, stop_id_0, stop_id_1] <- stops do %>
-      <% veh0 = @vehicles[stop_id_0] %>
-      <% veh1 = @vehicles[stop_id_1] %>
+      <% vs0 = @vehicles[stop_id_0] || [] %>
+      <% vs1 = @vehicles[stop_id_1] || [] %>
 
       <tr>
-        <th><%= if veh0 && veh0.current_status == :IN_TRANSIT_TO, do: ">" %></th>
-        <th><%= if veh0 && veh0.current_status == :INCOMING_AT, do: ">" %></th>
-        <th><%= if veh0 && veh0.current_status == :STOPPED_AT, do: ">" %></th>
-        <th><%= stop_name %></th>
-        <th><%= if veh1 && veh1.current_status == :STOPPED_AT, do: "<" %></th>
-        <th><%= if veh1 && veh1.current_status == :INCOMING_AT, do: "<" %></th>
-        <th><%= if veh1 && veh1.current_status == :IN_TRANSIT_TO, do: "<" %></th>
+        <td><%= trainify(vs0, :IN_TRANSIT_TO, ">") %></td>
+        <td><%= trainify(vs0, :INCOMING_AT, ">") %></td>
+        <td><%= trainify(vs0, :STOPPED_AT, ">") %></td>
+        <td><%= stop_name %></td>
+        <td><%= trainify(vs1, :IN_TRANSIT_TO, "<") %></td>
+        <td><%= trainify(vs1, :INCOMING_AT, "<") %></td>
+        <td><%= trainify(vs1, :STOPPED_AT, "<") %></td>
       </tr>
     <% end %>
   </table>
@@ -61,7 +61,7 @@
       </tr>
     </thead>
     <tbody>
-      <%= for {_id, vehicle} <- @vehicles do %>
+      <%= for {_id, vehicles} <- @vehicles, vehicle <- vehicles do %>
         <tr>
           <%= if (trip = vehicle.trip) do %>
             <td><%= trip.route_id %></td>
