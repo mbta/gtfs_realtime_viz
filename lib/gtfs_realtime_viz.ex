@@ -18,16 +18,13 @@ defmodule GTFSRealtimeViz do
     State.new_data(raw)
   end
 
-  @spec visualize(String.t) :: :ok
-  def visualize(filename) do
+  @spec visualize() :: String.t
+  def visualize do
     routes = Application.get_env(:gtfs_realtime_viz, :routes)
 
-    content =
-      [vehicles: vehicles_by_stop_id(), routes: routes]
-      |> gen_html
-      |> Phoenix.HTML.safe_to_string
-
-    File.write!(filename, content)
+    [vehicles: vehicles_by_stop_id(), routes: routes]
+    |> gen_html
+    |> Phoenix.HTML.safe_to_string
   end
 
   @spec vehicles_by_stop_id() :: %{required(String.t) => Proto.vehicle_position}
