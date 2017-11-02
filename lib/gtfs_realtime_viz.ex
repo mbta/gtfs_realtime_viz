@@ -15,21 +15,21 @@ defmodule GTFSRealtimeViz do
 
   @routes Application.get_env(:gtfs_realtime_viz, :routes)
 
-  @spec new_message(Proto.raw, String.t) :: :ok
-  def new_message(raw, comment) do
-    State.new_data(raw, comment)
+  @spec new_message(term, Proto.raw, String.t) :: :ok
+  def new_message(group, raw, comment) do
+    State.new_data(group, raw, comment)
   end
 
-  @spec visualize() :: String.t
-  def visualize do
-    [vehicle_archive: vehicles_by_stop_id(), routes: @routes]
+  @spec visualize(term) :: String.t
+  def visualize(group) do
+    [vehicle_archive: vehicles_by_stop_id(group), routes: @routes]
     |> gen_html
     |> Phoenix.HTML.safe_to_string
   end
 
-  @spec vehicles_by_stop_id() :: [{String.t, %{required(String.t) => [Proto.vehicle_position]}}]
-  defp vehicles_by_stop_id do
-    Enum.map(State.vehicles(), fn {comment, vehicles} ->
+  @spec vehicles_by_stop_id(term) :: [{String.t, %{required(String.t) => [Proto.vehicle_position]}}]
+  defp vehicles_by_stop_id(group) do
+    Enum.map(State.vehicles(group), fn {comment, vehicles} ->
       vehicles_by_stop = Enum.reduce(vehicles, %{}, fn v, acc ->
         update_in acc, [v.stop_id], fn vs ->
           [v | (vs || [])]
