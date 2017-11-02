@@ -55,13 +55,13 @@
           <% vs1 = vehicles_by_stop[stop_id_1] || [] %>
 
           <tr>
-            <td><%= trainify(vs0, :IN_TRANSIT_TO, "v") %></td>
-            <td><%= trainify(vs0, :INCOMING_AT, "v") %></td>
-            <td><%= trainify(vs0, :STOPPED_AT, "v") %></td>
+            <td><%= trainify(vs0, :IN_TRANSIT_TO, "🚂") %></td>
+            <td><%= trainify(vs0, :INCOMING_AT, "🚂") %></td>
+            <td><%= trainify(vs0, :STOPPED_AT, "🚂") %></td>
             <td><%= stop_name %></td>
-            <td><%= trainify(vs1, :IN_TRANSIT_TO, "^") %></td>
-            <td><%= trainify(vs1, :INCOMING_AT, "^") %></td>
-            <td><%= trainify(vs1, :STOPPED_AT, "^") %></td>
+            <td><%= trainify(vs1, :STOPPED_AT, "🚂") %></td>
+            <td><%= trainify(vs1, :INCOMING_AT, "🚂") %></td>
+            <td><%= trainify(vs1, :IN_TRANSIT_TO, "🚂") %></td>
           </tr>
         <% end %>
       </table>
