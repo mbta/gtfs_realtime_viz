@@ -30,17 +30,6 @@ use Mix.Config
 #     import_config "#{Mix.env}.exs"
 
 # e.g.
-# config :gtfs_realtime_viz, :routes, %{
-#   "Mattapan" => [
-#     ["Ashmont", "70261", "70262"],
-#     ["Cedar Grove", "70263", "70264"],
-#     ["Butler", "70265", "70266"],
-#     ["Milton", "70267", "70268"],
-#     ["Central Ave", "70269", "70270"],
-#     ["Valley Road", "70271", "70272"],
-#     ["Capen St.", "70273", "70274"],
-#     ["Mattapan", "70275", "70276"],
-#   ]
-# }
+
 config :gtfs_realtime_viz, :routes, %{}
-config :gtfs_realtime_viz, :max_archive, 2
+config :gtfs_realtime_viz, :max_archive, 1
