@@ -55,20 +55,20 @@ config :gtfs_realtime_viz, :max_archive, 5
 
 This app runs a GenServer that stores protobuf data sent to it, and which can render the messages its received as HTML. Whether running standalone or within another application, the interface for interacting with the tool is the `GTFSRealtimeViz` module.
 
-First you send raw protobuf data to it with `GTFSRealtimeViz.new_message/2`. The first argument is the protobuf data, and the second is a comment about that file. For example, if you have the data saved locally in a file, you might do:
+First you send raw protobuf data to it with `GTFSRealtimeViz.new_message/3`. The first argument specifies what type of data it is, if you want to send data, say, from multiple environments. The second argument is the protobuf data, and the third is a comment about that data. For example, if you have the data saved locally in a file, you might do:
 
 ```ex
-iex> GTFSRealtimeViz.new_message(File.read!("/path/to/file.pb"), "This is my PB file")
+iex> GTFSRealtimeViz.new_message(:prod, File.read!("/path/to/file.pb"), "This is my PB file")
 ```
 
 Note that a GTFS Realtime message can have Vehicle Positions, Trip Updates, or Alerts. This tool currently only uses Vehicle Positions and will ignore anything else it's sent.
 
-As you send multiple messages to the app, it will store them all, up to the configured `max_archive`, at which point it will evict older messages.
+As you send multiple messages to the app, it will store them all, up to the configured `max_archive` per grouping, at which point it will evict older messages.
 
-To generate HTML, run `GTFSRealtimeViz.visualize/0`. This will return a `String.t` of HTML. It's just a fragment (e.g., it lacks `<html>` tags and the like), but if you save it and open it in a browser, most browsers should display it just fine. Alternatively, if you're using this in another application, because it's just a fragment, you should be able to render the string within the frame of the other application.
+To generate HTML, run `GTFSRealtimeViz.visualize/1`. This will return a `String.t` of HTML. It's just a fragment (e.g., it lacks `<html>` tags and the like), but if you save it and open it in a browser, most browsers should display it just fine. Alternatively, if you're using this in another application, because it's just a fragment, you should be able to render the string within the frame of the other application.
 
 If you just want a standalone file to open in a browser, you might run:
 
 ```ex
-iex> File.write!("/path/to/file.html", GTFSRealtimeViz.visualize())
+iex> File.write!("/path/to/file.html", GTFSRealtimeViz.visualize(:prod))
 ```

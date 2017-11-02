@@ -34,8 +34,8 @@ defmodule GTFSRealtimeVizTest do
 
     raw = Proto.FeedMessage.encode(data)
 
-    GTFSRealtimeViz.new_message(raw, "this is the test data")
-    viz = GTFSRealtimeViz.visualize()
+    GTFSRealtimeViz.new_message(:test, raw, "this is the test data")
+    viz = GTFSRealtimeViz.visualize(:test)
 
     assert viz =~ "this is the test data"
     assert viz =~ "this_is_the_vehicle_id"
