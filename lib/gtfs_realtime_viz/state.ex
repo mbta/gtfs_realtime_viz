@@ -29,10 +29,12 @@ defmodule GTFSRealtimeViz.State do
     GenServer.call(pid, {:vehicles, group, vehicles, comment})
   end
 
-  @spec vehicles(GenServer.server, term) :: [Proto.vehicle_position]
+  @spec vehicles(GenServer.server, term) :: [{String.t, [Proto.vehicle_position]}]
   def vehicles(pid \\ __MODULE__, group)
   def vehicles(pid, group) do
-    GenServer.call(pid, {:vehicles, group})
+    pid
+    |> GenServer.call({:vehicles, group})
+    |> Enum.reverse
   end
 
   # server callbacks
