@@ -41,7 +41,13 @@ defmodule GTFSRealtimeViz.State do
 
   def handle_call({:vehicles, group, vehicles, comment}, _from, state) do
     new_state = update_in(state, [Access.key(group, [])], fn prev_msgs ->
-      Enum.take([{comment, vehicles} | prev_msgs], max_archive())
+      max = max_archive()
+      msgs = [{comment, vehicles} | prev_msgs]
+      if max == :infinity do
+        msgs
+      else
+        Enum.take(msgs, max)
+      end
     end)
 
     {:reply, :ok, new_state}
