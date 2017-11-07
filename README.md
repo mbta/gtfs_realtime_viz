@@ -45,7 +45,7 @@ config :gtfs_realtime_viz, :routes, %{
 }
 ```
 
-The second configuration option is `max_archive` and determines how many protobuf messages the app will store. The visualization generates static HTML that allows you to page through visualizations, so the page can grow quite large if you configure a large `max_archive`. An example configuration might be:
+The second configuration option is `max_archive` and determines how many protobuf messages the app will store. The visualization generates static HTML that allows you to page through visualizations, so the page can grow quite large if you configure a large `max_archive`. For cases where you're not worried about running out of memory (say, experimenting or debugging locally), you can use `:infinity`. An example configuration might be:
 
 ``` ex
 config :gtfs_realtime_viz, :max_archive, 5

@@ -13,8 +13,6 @@ defmodule GTFSRealtimeViz do
   require EEx
   EEx.function_from_file :def, :gen_html, "lib/viz.eex", [:assigns], [engine: Phoenix.HTML.Engine]
 
-  @routes Application.get_env(:gtfs_realtime_viz, :routes)
-
   @spec new_message(term, Proto.raw, String.t) :: :ok
   def new_message(group, raw, comment) do
     State.new_data(group, raw, comment)
@@ -22,7 +20,7 @@ defmodule GTFSRealtimeViz do
 
   @spec visualize(term) :: String.t
   def visualize(group) do
-    [vehicle_archive: vehicles_by_stop_id(group), routes: @routes]
+    [vehicle_archive: vehicles_by_stop_id(group), routes: routes()]
     |> gen_html
     |> Phoenix.HTML.safe_to_string
   end
@@ -47,4 +45,6 @@ defmodule GTFSRealtimeViz do
     |> Enum.map(& "#{ascii_train} (#{&1.vehicle && &1.vehicle.id})")
     |> Enum.join(",")
   end
+
+  defp routes, do: Application.get_env(:gtfs_realtime_viz, :routes)
 end

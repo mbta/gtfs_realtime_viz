@@ -3,8 +3,6 @@ defmodule GTFSRealtimeViz.State do
 
   alias GTFSRealtimeViz.Proto
 
-  @max_archive Application.get_env(:gtfs_realtime_viz, :max_archive)
-
   @type state :: %{optional(term) => [{String.t, [Proto.vehicle_position]}]}
 
   def start_link(opts \\ []) do
@@ -31,17 +29,25 @@ defmodule GTFSRealtimeViz.State do
     GenServer.call(pid, {:vehicles, group, vehicles, comment})
   end
 
-  @spec vehicles(GenServer.server, term) :: [Proto.vehicle_position]
+  @spec vehicles(GenServer.server, term) :: [{String.t, [Proto.vehicle_position]}]
   def vehicles(pid \\ __MODULE__, group)
   def vehicles(pid, group) do
-    GenServer.call(pid, {:vehicles, group})
+    pid
+    |> GenServer.call({:vehicles, group})
+    |> Enum.reverse
   end
 
   # server callbacks
 
   def handle_call({:vehicles, group, vehicles, comment}, _from, state) do
     new_state = update_in(state, [Access.key(group, [])], fn prev_msgs ->
-      Enum.take([{comment, vehicles} | prev_msgs], @max_archive)
+      max = max_archive()
+      msgs = [{comment, vehicles} | prev_msgs]
+      if max == :infinity do
+        msgs
+      else
+        Enum.take(msgs, max)
+      end
     end)
 
     {:reply, :ok, new_state}
@@ -49,4 +55,6 @@ defmodule GTFSRealtimeViz.State do
   def handle_call({:vehicles, group}, _from, state) do
     {:reply, state[group], state}
   end
+
+  defp max_archive, do: Application.get_env(:gtfs_realtime_viz, :max_archive)
 end

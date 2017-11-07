@@ -15,10 +15,7 @@ defmodule GTFSRealtimeViz.Mixfile do
     [
       extra_applications: [:logger],
       mod: {GTFSRealtimeViz.Application, []},
-      env: [
-        routes: %{},
-        max_archive: 5,
-      ]
+      env: env(),
     ]
   end
 
@@ -27,6 +24,13 @@ defmodule GTFSRealtimeViz.Mixfile do
       {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
       {:exprotobuf, "~> 1.2.9"},
       {:phoenix_html, "~> 2.10.4"},
+    ]
+  end
+
+  defp env do
+    [
+      max_archive: 5,
+      routes: %{},
     ]
   end
 end
