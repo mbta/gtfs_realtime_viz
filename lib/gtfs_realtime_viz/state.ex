@@ -3,8 +3,6 @@ defmodule GTFSRealtimeViz.State do
 
   alias GTFSRealtimeViz.Proto
 
-  @max_archive Application.get_env(:gtfs_realtime_viz, :max_archive)
-
   @type state :: %{optional(term) => [{String.t, [Proto.vehicle_position]}]}
 
   def start_link(opts \\ []) do
@@ -41,7 +39,7 @@ defmodule GTFSRealtimeViz.State do
 
   def handle_call({:vehicles, group, vehicles, comment}, _from, state) do
     new_state = update_in(state, [Access.key(group, [])], fn prev_msgs ->
-      Enum.take([{comment, vehicles} | prev_msgs], @max_archive)
+      Enum.take([{comment, vehicles} | prev_msgs], max_archive())
     end)
 
     {:reply, :ok, new_state}
@@ -49,4 +47,6 @@ defmodule GTFSRealtimeViz.State do
   def handle_call({:vehicles, group}, _from, state) do
     {:reply, state[group], state}
   end
+
+  defp max_archive, do: Application.get_env(:gtfs_realtime_viz, :max_archive)
 end
