@@ -45,6 +45,7 @@ defmodule GTFSRealtimeViz.Mixfile do
 
   defp package do
     [
+      licenses: ["MIT"],
       maintainers: ["Gabe Durazo <gabe@durazo.us>", "John Kohler", "Alex Sghia-Hughes", "Dave Maltzan"]
     ]
   end
