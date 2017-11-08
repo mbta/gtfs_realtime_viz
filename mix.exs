@@ -1,13 +1,18 @@
 defmodule GTFSRealtimeViz.Mixfile do
   use Mix.Project
 
+  @version "0.1.0"
+
   def project do
     [
       app: :gtfs_realtime_viz,
-      version: "0.1.0",
+      version: @version,
       elixir: "~> 1.0",
       start_permanent: Mix.env == :prod,
-      deps: deps()
+      deps: deps(),
+      package: package(),
+      description: description(),
+      source_url: "https://github.com/mbta/gtfs_realtime_viz"
     ]
   end
 
@@ -31,6 +36,16 @@ defmodule GTFSRealtimeViz.Mixfile do
     [
       max_archive: 5,
       routes: %{},
+    ]
+  end
+
+  defp description do
+    "Visualizer for GTFS Realtime protocol buffer files"
+  end
+
+  defp package do
+    [
+      maintainers: ["Gabe Durazo <gabe@durazo.us>", "John Kohler", "Alex Sghia-Hughes", "Dave Maltzan"]
     ]
   end
 end
