@@ -5,7 +5,7 @@ defmodule GTFSRealtimeViz.Mixfile do
     [
       app: :gtfs_realtime_viz,
       version: "0.1.0",
-      elixir: "~> 1.5",
+      elixir: "~> 1.0",
       start_permanent: Mix.env == :prod,
       deps: deps()
     ]
@@ -21,9 +21,9 @@ defmodule GTFSRealtimeViz.Mixfile do
 
   defp deps do
     [
-      {:dialyxir, "~> 0.5", only: [:dev], runtime: false},
-      {:exprotobuf, "~> 1.2.9"},
-      {:phoenix_html, "~> 2.10.4"},
+      {:dialyxir, "~> 0.0", only: [:dev], runtime: false},
+      {:exprotobuf, "~> 1.0"},
+      {:phoenix_html, "~> 2.0"},
     ]
   end
 
