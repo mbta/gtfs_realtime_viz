@@ -1,4 +1,6 @@
 defmodule GTFSRealtimeViz.State do
+  @moduledoc false
+
   use GenServer
 
   alias GTFSRealtimeViz.Proto

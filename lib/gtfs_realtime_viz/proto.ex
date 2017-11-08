@@ -1,4 +1,8 @@
 defmodule GTFSRealtimeViz.Proto do
+  @moduledoc """
+  Dialyzer typedefs of all the GTFS Realtime structs in the .proto file.
+  """
+
   use Protobuf, from: Path.expand("../gtfs-realtime.proto", __DIR__)
 
   alias GTFSRealtimeViz.Proto
