@@ -36,16 +36,36 @@ defmodule GTFSRealtimeViz do
   Renders the received protobuf files and comments into an HTML fragment that can either
   be opened directly in a browser or embedded within the HTML layout of another app.
   """
-  @spec visualize(term) :: String.t
-  def visualize(group) do
-    [vehicle_archive: vehicles_by_stop_id(group), routes: routes()]
+  @spec visualize(term, %{String.t => [[String.t]]}) :: String.t
+  def visualize(group, opts) do
+    all_locations = locations_we_care_about(opts)
+    vehicles_we_care_about = group
+                             |> State.vehicles
+                             |> vehicles_we_care_about(all_locations)
+
+    [vehicle_archive: vehicles_by_stop_id(vehicles_we_care_about), routes: opts]
     |> gen_html
     |> Phoenix.HTML.safe_to_string
   end
 
-  @spec vehicles_by_stop_id(term) :: [{String.t, %{required(String.t) => [Proto.vehicle_position]}}]
-  defp vehicles_by_stop_id(group) do
-    Enum.map(State.vehicles(group), fn {comment, vehicles} ->
+  def locations_we_care_about(opts) do
+    opts
+    |> Enum.flat_map(fn {_, stop} -> stop end)
+    |> Enum.flat_map(fn stop -> stop end)
+  end
+
+  def vehicles_we_care_about(state, locations_we_care_about) do
+    Enum.map(state,
+      fn {descriptor, position_list} ->
+        filtered_positions = position_list
+        |> Enum.filter(fn position -> position.stop_id in locations_we_care_about end)
+        {descriptor, filtered_positions}
+      end)
+  end
+
+  @spec vehicles_by_stop_id([{String.t, [Proto.vehicle_position]}]) :: [{String.t, %{required(String.t) => [Proto.vehicle_position]}}]
+  defp vehicles_by_stop_id(state) do
+    Enum.map(state, fn {comment, vehicles} ->
       vehicles_by_stop = Enum.reduce(vehicles, %{}, fn v, acc ->
         update_in acc, [v.stop_id], fn vs ->
           [v | (vs || [])]
