@@ -50,7 +50,7 @@
           <th class="viz-position">Transit</th>
         </tr>
 
-        <%= for [stop_name, stop_id_0, stop_id_1] <- stops do %>
+        <%= for {stop_name, stop_id_0, stop_id_1} <- stops do %>
           <% vs0 = vehicles_by_stop[stop_id_0] || [] %>
           <% vs1 = vehicles_by_stop[stop_id_1] || [] %>
 

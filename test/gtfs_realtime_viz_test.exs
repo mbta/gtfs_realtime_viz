@@ -35,7 +35,7 @@ defmodule GTFSRealtimeVizTest do
     raw = Proto.FeedMessage.encode(data)
 
     GTFSRealtimeViz.new_message(:test, raw, "this is the test data")
-    viz = GTFSRealtimeViz.visualize(:test, %{"route" => [["stop", "this_is_the_stop_id", "outbound"]]})
+    viz = GTFSRealtimeViz.visualize(:test, %{"route" => [{"stop", "this_is_the_stop_id", "outbound"}]})
 
     assert viz =~ "this is the test data"
     assert viz =~ "this_is_the_vehicle_id"
@@ -73,7 +73,7 @@ defmodule GTFSRealtimeVizTest do
     raw = Proto.FeedMessage.encode(data)
 
     GTFSRealtimeViz.new_message(:test, raw, "this is the test data")
-    viz = GTFSRealtimeViz.visualize(:test, %{"Route" => [["First Stop", "this_is_the_stop_id", "124"], ["Middle Stop", "125", "126"], ["End Stop", "127", "128"]]})
+    viz = GTFSRealtimeViz.visualize(:test, %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]})
 
     assert viz =~ "this is the test data"
     assert viz =~ "this_is_the_vehicle_id"
@@ -94,7 +94,7 @@ defmodule GTFSRealtimeVizTest do
           vehicle: %Proto.VehiclePosition{
             trip: %Proto.TripDescriptor{
               trip_id: "this_is_the_trip_id",
-              route_id: "First Route",
+              route_id: "this_is_the_route_id",
               direction_id: 0,
             },
             vehicle: %Proto.VehicleDescriptor{
@@ -114,7 +114,7 @@ defmodule GTFSRealtimeVizTest do
     raw = Proto.FeedMessage.encode(data)
 
     GTFSRealtimeViz.new_message(:test, raw, "this is the test data")
-    viz = GTFSRealtimeViz.visualize(:test, %{"First Route" => [["FR Only Stop", "this_is_the_stop_id", "124"]], "Second Route" => [["SR Only Stop", "125", "126"]]})
+    viz = GTFSRealtimeViz.visualize(:test, %{"First Route" => [{"FR Only Stop", "this_is_the_stop_id", "124"}], "Second Route" => [{"SR Only Stop", "125", "126"}]})
 
     assert viz =~ "this is the test data"
     assert viz =~ "this_is_the_vehicle_id"
@@ -176,7 +176,7 @@ defmodule GTFSRealtimeVizTest do
     raw = Proto.FeedMessage.encode(data)
 
     GTFSRealtimeViz.new_message(:test, raw, "this is the test data")
-    viz = GTFSRealtimeViz.visualize(:test, %{"First Route" => [["FR Only Stop", "this_is_the_stop_id", "124"]]})
+    viz = GTFSRealtimeViz.visualize(:test, %{"First Route" => [{"FR Only Stop", "this_is_the_stop_id", "124"}]})
 
     refute viz =~ "other_route"
     refute viz =~ "different_vehicle"
@@ -185,7 +185,7 @@ defmodule GTFSRealtimeVizTest do
 
   describe "routes_we_care_about/1" do
     test "turns a map of route name -> list of lists describing the stops into a list of all stops on all routes" do
-      routes = %{"First Route" => [["FR Only Stop", "123", "124"]], "Second Route" => [["SR First Stop", "125", "126"], ["SR Second Stop", "234", "432"]]}
+      routes = %{"First Route" => [{"FR Only Stop", "123", "124"}], "Second Route" => [{"SR First Stop", "125", "126"}, {"SR Second Stop", "234", "432"}]}
       assert GTFSRealtimeViz.routes_we_care_about(routes) == ["First Route", "Second Route"]
     end
   end
