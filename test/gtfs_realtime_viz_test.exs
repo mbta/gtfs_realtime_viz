@@ -15,7 +15,7 @@ defmodule GTFSRealtimeVizTest do
           vehicle: %Proto.VehiclePosition{
             trip: %Proto.TripDescriptor{
               trip_id: "this_is_the_trip_id",
-              route_id: "this_is_the_route_id",
+              route_id: "route",
               direction_id: 0,
             },
             vehicle: %Proto.VehicleDescriptor{
@@ -53,7 +53,7 @@ defmodule GTFSRealtimeVizTest do
           vehicle: %Proto.VehiclePosition{
             trip: %Proto.TripDescriptor{
               trip_id: "this_is_the_trip_id",
-              route_id: "this_is_the_route_id",
+              route_id: "Route",
               direction_id: 0,
             },
             vehicle: %Proto.VehicleDescriptor{
@@ -94,7 +94,7 @@ defmodule GTFSRealtimeVizTest do
           vehicle: %Proto.VehiclePosition{
             trip: %Proto.TripDescriptor{
               trip_id: "this_is_the_trip_id",
-              route_id: "this_is_the_route_id",
+              route_id: "First Route",
               direction_id: 0,
             },
             vehicle: %Proto.VehicleDescriptor{
@@ -136,7 +136,7 @@ defmodule GTFSRealtimeVizTest do
           vehicle: %Proto.VehiclePosition{
             trip: %Proto.TripDescriptor{
               trip_id: "this_is_the_trip_id",
-              route_id: "this_is_the_route_id",
+              route_id: "First Route",
               direction_id: 0,
             },
             vehicle: %Proto.VehicleDescriptor{
@@ -183,16 +183,16 @@ defmodule GTFSRealtimeVizTest do
     assert viz =~ "this_is_the_vehicle_id"
   end
 
-  describe "locations_we_care_about/1" do
+  describe "routes_we_care_about/1" do
     test "turns a map of route name -> list of lists describing the stops into a list of all stops on all routes" do
       routes = %{"First Route" => [["FR Only Stop", "123", "124"]], "Second Route" => [["SR First Stop", "125", "126"], ["SR Second Stop", "234", "432"]]}
-      assert GTFSRealtimeViz.locations_we_care_about(routes) == ["FR Only Stop", "123", "124", "SR First Stop", "125", "126", "SR Second Stop", "234", "432"]
+      assert GTFSRealtimeViz.routes_we_care_about(routes) == ["First Route", "Second Route"]
     end
   end
 
   describe "vehicles_we_care_about/2" do
     test "removes vehicle positions at stop ids we dont care about" do
-      locations_we_care_about = ["FR Only Stop", "123", "124", "SR First Stop", "125", "126", "SR Second Stop", "234", "432"]
+      routes_we_care_about = ["First Route"]
       state = [{"this is the test data",
                 [%GTFSRealtimeViz.Proto.VehiclePosition{congestion_level: nil,
                    current_status: :IN_TRANSIT_TO, current_stop_sequence: nil,
@@ -201,7 +201,7 @@ defmodule GTFSRealtimeVizTest do
                      longitude: 0.0, odometer: nil, speed: nil}, stop_id: "123",
                     timestamp: nil,
                     trip: %GTFSRealtimeViz.Proto.TripDescriptor{direction_id: 0,
-                      route_id: "this_is_the_route_id", schedule_relationship: nil,
+                      route_id: "First Route", schedule_relationship: nil,
                       start_date: nil, start_time: nil, trip_id: "this_is_the_trip_id"},
                     vehicle: %GTFSRealtimeViz.Proto.VehicleDescriptor{id: "this_is_the_vehicle_id",
                       label: "this_is_the_vehicle_label", license_plate: nil}}]},
@@ -213,7 +213,7 @@ defmodule GTFSRealtimeVizTest do
                      longitude: 0.0, odometer: nil, speed: nil}, stop_id: "124",
                     timestamp: nil,
                     trip: %GTFSRealtimeViz.Proto.TripDescriptor{direction_id: 0,
-                      route_id: "this_is_the_route_id", schedule_relationship: nil,
+                      route_id: "First Route", schedule_relationship: nil,
                       start_date: nil, start_time: nil, trip_id: "this_is_the_trip_id"},
                     vehicle: %GTFSRealtimeViz.Proto.VehicleDescriptor{id: "this_is_the_vehicle_id",
                       label: "this_is_the_vehicle_label", license_plate: nil}}]},
@@ -225,7 +225,7 @@ defmodule GTFSRealtimeVizTest do
                      longitude: 0.0, odometer: nil, speed: nil}, stop_id: "321",
                     timestamp: nil,
                     trip: %GTFSRealtimeViz.Proto.TripDescriptor{direction_id: 0,
-                      route_id: "this_is_the_route_id", schedule_relationship: nil,
+                      route_id: "Other Route", schedule_relationship: nil,
                       start_date: nil, start_time: nil, trip_id: "this_is_the_trip_id"},
                     vehicle: %GTFSRealtimeViz.Proto.VehicleDescriptor{id: "this_is_the_vehicle_id",
                       label: "this_is_the_vehicle_label", license_plate: nil}},
@@ -235,11 +235,11 @@ defmodule GTFSRealtimeVizTest do
                     position: %GTFSRealtimeViz.Proto.Position{bearing: nil, latitude: 1.0,
                       longitude: 1.0, odometer: nil, speed: nil}, stop_id: "432", timestamp: nil,
                     trip: %GTFSRealtimeViz.Proto.TripDescriptor{direction_id: 0,
-                      route_id: "other_route", schedule_relationship: nil, start_date: nil,
+                      route_id: "First Route", schedule_relationship: nil, start_date: nil,
                       start_time: nil, trip_id: "secondary_trip_id"},
                     vehicle: %GTFSRealtimeViz.Proto.VehicleDescriptor{id: "different_vehicle",
                       label: "different_vehicle_label", license_plate: nil}}]}]
-      assert GTFSRealtimeViz.vehicles_we_care_about(state, locations_we_care_about) ==
+      assert GTFSRealtimeViz.vehicles_we_care_about(state, routes_we_care_about) ==
         [{"this is the test data",
            [%GTFSRealtimeViz.Proto.VehiclePosition{congestion_level: nil,
               current_status: :IN_TRANSIT_TO, current_stop_sequence: nil,
@@ -248,7 +248,7 @@ defmodule GTFSRealtimeVizTest do
                 longitude: 0.0, odometer: nil, speed: nil}, stop_id: "123",
               timestamp: nil,
               trip: %GTFSRealtimeViz.Proto.TripDescriptor{direction_id: 0,
-                route_id: "this_is_the_route_id", schedule_relationship: nil,
+                route_id: "First Route", schedule_relationship: nil,
                 start_date: nil, start_time: nil, trip_id: "this_is_the_trip_id"},
               vehicle: %GTFSRealtimeViz.Proto.VehicleDescriptor{id: "this_is_the_vehicle_id",
                 label: "this_is_the_vehicle_label", license_plate: nil}}]},
@@ -260,7 +260,7 @@ defmodule GTFSRealtimeVizTest do
                longitude: 0.0, odometer: nil, speed: nil}, stop_id: "124",
               timestamp: nil,
               trip: %GTFSRealtimeViz.Proto.TripDescriptor{direction_id: 0,
-                route_id: "this_is_the_route_id", schedule_relationship: nil,
+                route_id: "First Route", schedule_relationship: nil,
                 start_date: nil, start_time: nil, trip_id: "this_is_the_trip_id"},
               vehicle: %GTFSRealtimeViz.Proto.VehicleDescriptor{id: "this_is_the_vehicle_id",
                 label: "this_is_the_vehicle_label", license_plate: nil}}]},
@@ -271,7 +271,7 @@ defmodule GTFSRealtimeVizTest do
               position: %GTFSRealtimeViz.Proto.Position{bearing: nil, latitude: 1.0,
                 longitude: 1.0, odometer: nil, speed: nil}, stop_id: "432", timestamp: nil,
               trip: %GTFSRealtimeViz.Proto.TripDescriptor{direction_id: 0,
-                route_id: "other_route", schedule_relationship: nil, start_date: nil,
+                route_id: "First Route", schedule_relationship: nil, start_date: nil,
                 start_time: nil, trip_id: "secondary_trip_id"},
               vehicle: %GTFSRealtimeViz.Proto.VehicleDescriptor{id: "different_vehicle",
                 label: "different_vehicle_label", license_plate: nil}}]}]

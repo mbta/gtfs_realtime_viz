@@ -38,27 +38,26 @@ defmodule GTFSRealtimeViz do
   """
   @spec visualize(term, %{String.t => [[String.t]]}) :: String.t
   def visualize(group, opts) do
-    all_locations = locations_we_care_about(opts)
+    routes = routes_we_care_about(opts)
     vehicles_we_care_about = group
                              |> State.vehicles
-                             |> vehicles_we_care_about(all_locations)
+                             |> vehicles_we_care_about(routes)
 
     [vehicle_archive: vehicles_by_stop_id(vehicles_we_care_about), routes: opts]
     |> gen_html
     |> Phoenix.HTML.safe_to_string
   end
 
-  def locations_we_care_about(opts) do
+  def routes_we_care_about(opts) do
     opts
-    |> Enum.flat_map(fn {_, stop} -> stop end)
-    |> Enum.flat_map(fn stop -> stop end)
+    |> Enum.map(fn {route, _} -> route end)
   end
 
-  def vehicles_we_care_about(state, locations_we_care_about) do
+  def vehicles_we_care_about(state, routes_we_care_about) do
     Enum.map(state,
       fn {descriptor, position_list} ->
         filtered_positions = position_list
-        |> Enum.filter(fn position -> position.stop_id in locations_we_care_about end)
+        |> Enum.filter(fn position -> position.trip.route_id in routes_we_care_about end)
         {descriptor, filtered_positions}
       end)
   end
@@ -83,6 +82,4 @@ defmodule GTFSRealtimeViz do
     |> Enum.map(& "#{ascii_train} (#{&1.vehicle && &1.vehicle.id})")
     |> Enum.join(",")
   end
-
-  defp routes, do: Application.get_env(:gtfs_realtime_viz, :routes)
 end
