@@ -182,13 +182,6 @@ defmodule GTFSRealtimeVizTest do
     assert viz =~ "this_is_the_vehicle_id"
   end
 
-  describe "routes_we_care_about/1" do
-    test "turns a map of route name -> list of lists describing the stops into a list of all stops on all routes" do
-      routes = %{"First Route" => [{"FR Only Stop", "123", "124"}], "Second Route" => [{"SR First Stop", "125", "126"}, {"SR Second Stop", "234", "432"}]}
-      assert GTFSRealtimeViz.routes_we_care_about(routes) == ["First Route", "Second Route"]
-    end
-  end
-
   describe "vehicles_we_care_about/2" do
     test "removes vehicle positions at stop ids we dont care about" do
       routes_we_care_about = ["First Route"]

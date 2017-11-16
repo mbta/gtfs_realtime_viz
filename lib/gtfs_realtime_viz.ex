@@ -38,7 +38,7 @@ defmodule GTFSRealtimeViz do
   """
   @spec visualize(term, %{String.t => [[String.t]]}) :: String.t
   def visualize(group, opts) do
-    routes = routes_we_care_about(opts)
+    routes = Map.keys(opts)
     vehicles_we_care_about = group
                              |> State.vehicles
                              |> vehicles_we_care_about(routes)
@@ -48,16 +48,13 @@ defmodule GTFSRealtimeViz do
     |> Phoenix.HTML.safe_to_string
   end
 
-  def routes_we_care_about(opts) do
-    opts
-    |> Enum.map(fn {route, _} -> route end)
-  end
-
-  def vehicles_we_care_about(state, routes_we_care_about) do
+  def vehicles_we_care_about(state, routes) do
     Enum.map(state,
       fn {descriptor, position_list} ->
         filtered_positions = position_list
-        |> Enum.filter(fn position -> position.trip.route_id in routes_we_care_about end)
+        |> Enum.filter(fn position ->
+          position.trip && position.trip.route_id in routes
+        end)
         {descriptor, filtered_positions}
       end)
   end

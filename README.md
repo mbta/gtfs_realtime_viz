@@ -72,5 +72,5 @@ To generate HTML, run `GTFSRealtimeViz.visualize/1`. This will return a `String.
 If you just want a standalone file to open in a browser, you might run:
 
 ```ex
-iex> File.write!("/path/to/file.html", GTFSRealtimeViz.visualize(:prod, %{"Route" => [["First stop", "123", "124"], ["Second stop" , "125", "126"]]))
+iex> File.write!("/path/to/file.html", GTFSRealtimeViz.visualize(:prod, %{"Route" => {"First stop", "123", "124"},  {"Second stop" , "125", "126"}]))
 ```
