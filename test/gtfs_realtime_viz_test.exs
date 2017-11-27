@@ -212,4 +212,112 @@ defmodule GTFSRealtimeVizTest do
       assert GTFSRealtimeViz.vehicles_we_care_about(state, routes_we_care_about) == expected
     end
   end
+
+  describe "visualize_diff/3" do
+    test "Does not show repeats" do
+      data = %Proto.FeedMessage{
+        header: %Proto.FeedHeader{
+          gtfs_realtime_version: "1.0",
+        },
+      entity: [
+        %Proto.FeedEntity{
+          id: "123",
+          is_deleted: false,
+          vehicle: %Proto.VehiclePosition{
+            trip: %Proto.TripDescriptor{
+              trip_id: "this_is_the_trip_id",
+              route_id: "Route",
+              direction_id: 0,
+            },
+            vehicle: %Proto.VehicleDescriptor{
+              id: "this_is_the_vehicle_id",
+              label: "this_is_the_vehicle_label",
+            },
+            position: %Proto.Position{
+              latitude: 0.00,
+              longitude: 0.00,
+            },
+            stop_id: "this_is_the_stop_id",
+          }
+        }
+      ]
+    }
+
+      raw = Proto.FeedMessage.encode(data)
+
+      routes = %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}
+      GTFSRealtimeViz.new_message(:test_base, raw, "this is the base data")
+      GTFSRealtimeViz.new_message(:test_diff, raw, "this is the diff data")
+      viz = GTFSRealtimeViz.visualize_diff(:test_base, :test_diff, routes)
+
+      refute viz =~ "this_is_the_vehicle_id"
+    end
+
+    test "Shows trains when they are at separate stops" do
+      base_data = %Proto.FeedMessage{
+        header: %Proto.FeedHeader{
+          gtfs_realtime_version: "1.0",
+        },
+      entity: [
+        %Proto.FeedEntity{
+          id: "123",
+          is_deleted: false,
+          vehicle: %Proto.VehiclePosition{
+            trip: %Proto.TripDescriptor{
+              trip_id: "this_is_the_trip_id",
+              route_id: "Route",
+              direction_id: 0,
+            },
+            vehicle: %Proto.VehicleDescriptor{
+              id: "this_is_the_vehicle_id",
+              label: "this_is_the_vehicle_label",
+            },
+            position: %Proto.Position{
+              latitude: 0.00,
+              longitude: 0.00,
+            },
+            stop_id: "this_is_the_stop_id",
+          }
+        }
+      ]
+    }
+      diff_data = %Proto.FeedMessage{
+        header: %Proto.FeedHeader{
+          gtfs_realtime_version: "1.0",
+        },
+      entity: [
+        %Proto.FeedEntity{
+          id: "456",
+          is_deleted: false,
+          vehicle: %Proto.VehiclePosition{
+            trip: %Proto.TripDescriptor{
+              trip_id: "this_is_the_trip_id",
+              route_id: "Route",
+              direction_id: 0,
+            },
+            vehicle: %Proto.VehicleDescriptor{
+              id: "this_is_the_vehicle_id",
+              label: "this_is_the_vehicle_label",
+            },
+            position: %Proto.Position{
+              latitude: 0.00,
+              longitude: 0.00,
+            },
+            stop_id: "separate_stop_id",
+          }
+        }
+      ]
+    }
+
+      base_raw = Proto.FeedMessage.encode(base_data)
+      diff_raw = Proto.FeedMessage.encode(diff_data)
+
+      routes = %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}
+      GTFSRealtimeViz.new_message(:test_base, base_raw, "this is the base data")
+      GTFSRealtimeViz.new_message(:test_diff, diff_raw, "this is the diff data")
+      viz = GTFSRealtimeViz.visualize_diff(:test_base, :test_diff, routes)
+
+      assert viz =~ "this_is_the_vehicle_id"
+    end
+  end
 end

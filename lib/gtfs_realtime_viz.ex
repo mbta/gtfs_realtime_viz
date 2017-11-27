@@ -115,7 +115,7 @@ defmodule GTFSRealtimeViz do
 
   # removes any vehicles that appear in given list
   defp unique_trains(vehicles_1, vehicles_2, ascii) do
-    Enum.reject(base, & &1 in diff) |> Enum.map(&{ascii_train_base, &1})
+    Enum.reject(vehicles_1, & &1 in vehicles_2) |> Enum.map(&{ascii, &1})
   end
 
   defp vehicles_with_status(vehicles, status) do
