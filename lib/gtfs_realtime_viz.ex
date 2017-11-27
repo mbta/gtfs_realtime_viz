@@ -19,8 +19,9 @@ defmodule GTFSRealtimeViz do
   alias GTFSRealtimeViz.Proto
 
   require EEx
-  EEx.function_from_file :defp, :gen_html, "lib/viz.eex", [:assigns], [engine: Phoenix.HTML.Engine]
-  EEx.function_from_file :defp, :gen_diff, "lib/diff.eex", [:assigns], [engine: Phoenix.HTML.Engine]
+  EEx.function_from_file :defp, :gen_html, "lib/templates/viz.eex", [:assigns], [engine: Phoenix.HTML.Engine]
+  EEx.function_from_file :defp, :render_diff, "lib/templates/diff.eex", [:assigns], [engine: Phoenix.HTML.Engine]
+  EEx.function_from_file :defp, :render_single_file, "lib/templates/single_file.eex", [:assigns], [engine: Phoenix.HTML.Engine]
 
   @doc """
   Send protobuf files to the app's GenServer. The app can handle a series of files,
@@ -42,7 +43,7 @@ defmodule GTFSRealtimeViz do
   def visualize(group, opts) do
     routes = Map.keys(opts)
     vehicle_archive = get_vehicle_archive(group, routes)
-    [vehicle_archive: vehicle_archive, routes: opts]
+    [vehicle_archive: vehicle_archive, routes: opts, render_diff?: false]
     |> gen_html
     |> Phoenix.HTML.safe_to_string
   end
@@ -51,8 +52,8 @@ defmodule GTFSRealtimeViz do
     routes = Map.keys(opts)
     archive_1 = get_vehicle_archive(group_1, routes)
     archive_2 = get_vehicle_archive(group_2, routes)
-    [vehicle_archives: Enum.zip(archive_1, archive_2), routes: opts]
-    |> gen_diff()
+    [vehicle_archive: Enum.zip(archive_1, archive_2), routes: opts, render_diff?: true]
+    |> gen_html()
     |> Phoenix.HTML.safe_to_string()
   end
 
@@ -110,7 +111,7 @@ defmodule GTFSRealtimeViz do
   end
 
   defp span_for_id({ascii, id}) do
-    "<span class=\"vehicle-#{id}\" onmouseover=\"highlight(#{id})\" onmouseout=\"removeHighlight(#{id})\">#{ascii} (#{id})</span>"
+    "<span class=\"vehicle-#{id}\" onmouseover=\"highlight(#{id}, 'red')\" onmouseout=\"highlight(#{id}, 'black')\">#{ascii} (#{id})</span>"
   end
 
   # removes any vehicles that appear in given list
