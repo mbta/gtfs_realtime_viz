@@ -18,7 +18,7 @@ defmodule GTFSRealtimeViz do
   alias GTFSRealtimeViz.State
   alias GTFSRealtimeViz.Proto
 
-  @typep route_opts :: %{String.t => [{String.t, String.t, String.t}]}
+  @type route_opts :: %{String.t => [{String.t, String.t, String.t}]}
 
   require EEx
   EEx.function_from_file :defp, :gen_html, "lib/templates/viz.eex", [:assigns], [engine: Phoenix.HTML.Engine]
@@ -39,7 +39,6 @@ defmodule GTFSRealtimeViz do
   @doc """
   Renders the received protobuf files and comments into an HTML fragment that can either
   be opened directly in a browser or embedded within the HTML layout of another app.
-  Opts expects a map of %{"route_id" => [{"Stop name", "inbound_id", "outbound_id"}]
   """
   @spec visualize(term, route_opts) :: String.t
   def visualize(group, opts) do
@@ -53,7 +52,6 @@ defmodule GTFSRealtimeViz do
   @doc """
   Renders an HTML fragment that displays the vehicle differences
   between two pb files.
-  Opts expects a map of %{"route_id" => [{"Stop name", "inbound_id", "outbound_id"}]
   """
   @spec visualize_diff(term, term, route_opts) :: String.t
   def visualize_diff(group_1, group_2, opts) do
