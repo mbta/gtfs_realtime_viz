@@ -1,0 +1,54 @@
+<%= for {{{comment_base, by_stop_base}, {comment_diff, by_stop_diff}}, i} <- Enum.with_index(@vehicle_archive) do %>
+  <div id="viz-<%= i %>" class="viz-tool viz-hidden">
+    <div class="viz-comment"><%= comment_base %> / <%= comment_diff %></div>
+
+    <h2>Routes</h2>
+
+    <%= for {route_name, stops} <- @routes do %>
+      <h3><%= route_name %></h3>
+      <table class="viz-ladder">
+        <tr>
+          <th class="viz-position">Transit
+          <th class="viz-position">Incoming</th>
+          <th class="viz-position">At</th>
+          <th>Station</th>
+          <th class="viz-position">At</th>
+          <th class="viz-position">Incoming</th>
+          <th class="viz-position">Transit</th>
+        </tr>
+
+        <%= for {stop_name, stop_id_0, stop_id_1} <- stops do %>
+          <% vs0_base = by_stop_base[stop_id_0] || [] %>
+          <% vs1_base = by_stop_base[stop_id_1] || [] %>
+
+          <% vs0_diff = by_stop_diff[stop_id_0] || [] %>
+          <% vs1_diff = by_stop_diff[stop_id_1] || [] %>
+
+          <tr>
+            <td>
+              <%= Phoenix.HTML.raw trainify_diff(vs0_base, vs0_diff, :IN_TRANSIT_TO, "🚂", "👻")%>
+            </td>
+            <td>
+              <%= Phoenix.HTML.raw trainify_diff(vs0_base, vs0_diff, :INCOMING_AT, "🚂", "👻")%>
+            </td>
+            <td>
+              <%= Phoenix.HTML.raw trainify_diff(vs0_base, vs0_diff, :STOPPED_AT, "🚂", "👻")%>
+            </td>
+            <td>
+              <%= stop_name %>
+            </td>
+            <td>
+              <%= Phoenix.HTML.raw trainify_diff(vs1_base, vs1_diff, :STOPPED_AT, "🚂", "👻")%>
+            </td>
+            <td>
+              <%= Phoenix.HTML.raw trainify_diff(vs1_base, vs1_diff, :INCOMING_AT, "🚂", "👻")%>
+            </td>
+            <td>
+              <%= Phoenix.HTML.raw trainify_diff(vs1_base, vs1_diff, :IN_TRANSIT_TO, "🚂", "👻")%>
+            </td>
+          </tr>
+        <% end %>
+      </table>
+    <% end %>
+  </div>
+<% end %>

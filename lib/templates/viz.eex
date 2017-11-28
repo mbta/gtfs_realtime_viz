@@ -1,0 +1,83 @@
+<style>
+  .viz-tool table {
+    border-collapse: collapse;
+    text-align: left;
+  }
+  .viz-tool td, .viz-tool th {
+    border-bottom: 1px solid #ddd;
+    margin: 0;
+    padding: 0;
+  }
+  .viz-tool .viz-comment {
+    border: 1px solid #ddd;
+    height: 50px;
+    margin-top: 1em;
+    padding: 0.5em;
+  }
+  .viz-tool table.viz-ladder {
+    width: 100%;
+  }
+  .viz-tool table.viz-all-vehicles td, .viz-tool table.viz-all-vehicles th{
+    padding: 0 1em;
+  }
+  .viz-tool .viz-position {
+    width: 14%;
+  }
+  .viz-tool.viz-hidden {
+    display: none;
+  }
+</style>
+
+<button id="viz-tool-previous-button">Previous</button>
+<button id="viz-tool-next-button">Next</button>
+
+<%= if @render_diff? do %>
+  <%= render_diff(vehicle_archive: @vehicle_archive, routes: @routes) %>
+<% else %>
+  <%= render_single_file(vehicle_archive: @vehicle_archive, routes: @routes) %>
+<% end %>
+
+<script>
+  (function(){
+    var vizShown = 0;
+    var vizPbCount = document.querySelectorAll(".viz-tool").length;
+
+    var prevButton = document.getElementById("viz-tool-previous-button");
+    var nextButton = document.getElementById("viz-tool-next-button");
+
+    function render(){
+      // set disabled states for Prev/Next buttons
+      prevButton.disabled = (vizShown === 0);
+      nextButton.disabled = (vizShown === vizPbCount - 1)
+
+      // hide all PB visualizations
+      var allViz = document.querySelectorAll(".viz-tool");
+      var i = 0;
+      for(i; i < allViz.length; i++){
+        allViz[i].classList.add("viz-hidden");
+      }
+
+      // unhide the relevant one
+      document.getElementById("viz-" + vizShown).classList.remove("viz-hidden");
+    }
+
+    prevButton.addEventListener("click", function(){
+      vizShown--;
+      render();
+    })
+
+    nextButton.addEventListener("click", function(){
+      vizShown++;
+      render();
+    })
+
+    render();
+  })();
+
+  function highlight(id, color) {
+    elements = document.getElementsByClassName("vehicle-" + id);
+    for (var i = 0; i < elements.length; i++) {
+      elements[i].style.color=color;
+    }
+  }
+</script>
