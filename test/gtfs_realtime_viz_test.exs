@@ -274,9 +274,9 @@ defmodule GTFSRealtimeVizTest do
       diff_raw = Proto.FeedMessage.encode(diff_data)
 
       routes = %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}
-      GTFSRealtimeViz.new_message(:test_base, base_raw, "this is the base data")
-      GTFSRealtimeViz.new_message(:test_diff, diff_raw, "this is the diff data")
-      viz = GTFSRealtimeViz.visualize_diff(:test_base, :test_diff, routes)
+      GTFSRealtimeViz.new_message(:test_bucket_base, base_raw, "this is the base data")
+      GTFSRealtimeViz.new_message(:test_bucket_diff, diff_raw, "this is the diff data")
+      viz = GTFSRealtimeViz.visualize_diff(:test_bucket_base, :test_bucket_diff, routes)
 
       refute viz =~ "this_is_the_vehicle_id"
     end
