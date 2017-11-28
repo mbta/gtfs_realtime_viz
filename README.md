@@ -13,7 +13,7 @@ This tool can be run either standalone or as a dependency of another project. To
 ```elixir
 def deps do
   [
-    {:gtfs_realtime_viz, github: "mbta/gtfs_realtime_viz"},
+    {:gtfs_realtime_viz, "~> 0.3.0"},
   ]
 end
 ```
