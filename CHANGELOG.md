@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.0
+
+* New function `visualize_diff/3` renders differences between two groups of protobuf files.
+
 ## 0.2.0
 
 Adds filtering by route.
