@@ -18,6 +18,8 @@ defmodule GTFSRealtimeViz do
   alias GTFSRealtimeViz.State
   alias GTFSRealtimeViz.Proto
 
+  @typep route_opts :: %{String.t => [{String.t, String.t, String.t}]}
+
   require EEx
   EEx.function_from_file :defp, :gen_html, "lib/templates/viz.eex", [:assigns], [engine: Phoenix.HTML.Engine]
   EEx.function_from_file :defp, :render_diff, "lib/templates/diff.eex", [:assigns], [engine: Phoenix.HTML.Engine]
@@ -39,7 +41,7 @@ defmodule GTFSRealtimeViz do
   be opened directly in a browser or embedded within the HTML layout of another app.
   Opts expects a map of %{"route_id" => [{"Stop name", "inbound_id", "outbound_id"}]
   """
-  @spec visualize(term, %{String.t => [{String.t, String.t, String.t}]}) :: String.t
+  @spec visualize(term, route_opts) :: String.t
   def visualize(group, opts) do
     routes = Map.keys(opts)
     vehicle_archive = get_vehicle_archive(group, routes)
@@ -48,6 +50,12 @@ defmodule GTFSRealtimeViz do
     |> Phoenix.HTML.safe_to_string
   end
 
+  @doc """
+  Renders an HTML fragment that displays the vehicle differences
+  between two pb files.
+  Opts expects a map of %{"route_id" => [{"Stop name", "inbound_id", "outbound_id"}]
+  """
+  @spec visualize_diff(term, term, route_opts) :: String.t
   def visualize_diff(group_1, group_2, opts) do
     routes = Map.keys(opts)
     archive_1 = get_vehicle_archive(group_1, routes)
@@ -111,7 +119,10 @@ defmodule GTFSRealtimeViz do
   end
 
   defp span_for_id({ascii, id}) do
-    "<span class=\"vehicle-#{id}\" onmouseover=\"highlight(#{id}, 'red')\" onmouseout=\"highlight(#{id}, 'black')\">#{ascii} (#{id})</span>"
+    tag_opts = [class: "vehicle-#{id}", onmouseover: "highlight(#{id}, 'red')", onmouseout: "highlight(#{id}, 'black')"]
+    :span
+    |> Phoenix.HTML.Tag.content_tag("#{ascii} (#{id})", tag_opts)
+    |> Phoenix.HTML.safe_to_string()
   end
 
   # removes any vehicles that appear in given list
