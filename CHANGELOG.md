@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.3.1
+
+* Visualizer now uses the vehicle label instead of vehicle ID
+
 ## 0.3.0
 
 * New function `visualize_diff/3` renders differences between two groups of protobuf files.
