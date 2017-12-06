@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.3.1
+## 0.4.0
 
 * Visualizer now uses the vehicle label instead of vehicle ID
 
