@@ -8,6 +8,7 @@
       <h3><%= route_name %></h3>
       <table class="viz-ladder">
         <tr>
+          <th class="viz-position">Next Train Arrives in:</th>
           <th class="viz-position">Transit
           <th class="viz-position">Incoming</th>
           <th class="viz-position">At</th>
@@ -15,16 +16,29 @@
           <th class="viz-position">At</th>
           <th class="viz-position">Incoming</th>
           <th class="viz-position">Transit</th>
+          <th class="viz-position">Next Train Arrives in:</th>
         </tr>
 
         <%= for {stop_name, stop_id_0, stop_id_1} <- stops do %>
           <% vs0_base = by_stop_base[stop_id_0] || [] %>
           <% vs1_base = by_stop_base[stop_id_1] || [] %>
+          <% {base_trips_0, diff_trips_0} = extract_trips(@trip_update_archive[stop_id_0]) %>
+          <% {base_trips_1, diff_trips_1} = extract_trips(@trip_update_archive[stop_id_1]) %>
 
           <% vs0_diff = by_stop_diff[stop_id_0] || [] %>
           <% vs1_diff = by_stop_diff[stop_id_1] || [] %>
 
+
+
           <tr>
+            <td>
+              <%= for prediction <- format_times(base_trips_0) do %>
+                🚂 <%= prediction %><br>
+              <% end %>
+              <%= for prediction <- format_times(diff_trips_0) do %>
+                👻 <%= prediction %><br>
+              <% end %>
+            </td>
             <td>
               <%= Phoenix.HTML.raw trainify_diff(vs0_base, vs0_diff, :IN_TRANSIT_TO, "🚂", "👻")%>
             </td>
@@ -45,6 +59,14 @@
             </td>
             <td>
               <%= Phoenix.HTML.raw trainify_diff(vs1_base, vs1_diff, :IN_TRANSIT_TO, "🚂", "👻")%>
+            </td>
+            <td>
+              <%= for prediction <- format_times(base_trips_1) do %>
+                🚂 <%= prediction %><br>
+              <% end %>
+              <%= for prediction <- format_times(diff_trips_1) do %>
+                👻 <%= prediction %><br>
+              <% end %>
             </td>
           </tr>
         <% end %>

@@ -11,7 +11,7 @@ defmodule GTFSRealtimeViz do
   $ iex -S mix
   iex(1)> proto = File.read!("filename.pb")
   iex(2)> GTFSRealtimeViz.new_message(:prod, proto, "first protobuf file")
-  iex(3)> File.write!("output.html", GTFSRealtimeViz.visualize(:prod))
+  iex(3)> File.write!("output.html", GTFSRealtimeViz.visualize(:prod, %{}))
   ```
   """
 
@@ -44,7 +44,8 @@ defmodule GTFSRealtimeViz do
   def visualize(group, opts) do
     routes = Map.keys(opts)
     vehicle_archive = get_vehicle_archive(group, routes)
-    [vehicle_archive: vehicle_archive, routes: opts, render_diff?: false]
+    trip_update_archive = get_trip_update_archive(group, routes)
+    [trip_update_archive: trip_update_archive, vehicle_archive: vehicle_archive, routes: opts, render_diff?: false]
     |> gen_html
     |> Phoenix.HTML.safe_to_string
   end
@@ -56,11 +57,73 @@ defmodule GTFSRealtimeViz do
   @spec visualize_diff(term, term, route_opts) :: String.t
   def visualize_diff(group_1, group_2, opts) do
     routes = Map.keys(opts)
-    archive_1 = get_vehicle_archive(group_1, routes)
-    archive_2 = get_vehicle_archive(group_2, routes)
-    [vehicle_archive: Enum.zip(archive_1, archive_2), routes: opts, render_diff?: true]
+    vehicle_archive_1 = get_vehicle_archive(group_1, routes)
+    trip_archive_1 = get_trip_update_archive(group_1, routes)
+    vehicle_archive_2 = get_vehicle_archive(group_2, routes)
+    trip_archive_2 = get_trip_update_archive(group_2, routes)
+    trip_archive = archive_trips(trip_archive_1, trip_archive_2)
+
+    [trip_update_archive: trip_archive, vehicle_archive: Enum.zip(vehicle_archive_1, vehicle_archive_2), routes: opts, render_diff?: true]
     |> gen_html()
     |> Phoenix.HTML.safe_to_string()
+  end
+
+  defp archive_trips(trip_set_1, trip_set_2) do
+    archived = Enum.reduce(trip_set_1, %{}, fn {key, value}, acc ->
+      Map.put(acc, key, {value, trip_set_2[key]})
+    end)
+    archived = Enum.reduce(trip_set_2, archived, fn {key, value}, acc ->
+      Map.put(acc, key, {trip_set_1[key], value})
+    end)
+  end
+
+  defp get_trip_update_archive(group, routes) do
+    group
+    |> State.trip_updates
+    |> trips_we_care_about(routes)
+    |> trip_updates_by_stop_id
+  end
+
+  def trips_we_care_about(state, routes) do
+    Enum.map(state,
+      fn {descriptor, update_list} ->
+        filtered_positions = update_list
+        |> Enum.filter(fn trip_update ->
+          trip_update.trip && trip_update.trip.route_id in routes
+        end)
+        {descriptor, filtered_positions}
+      end)
+  end
+
+  defp trip_updates_by_stop_id(state) do
+    Enum.flat_map(state, fn {_descriptor, trip_updates} ->
+      trip_updates
+      |> Enum.flat_map(fn trip_update ->
+        trip_update.stop_time_update
+        |> Enum.reduce(%{}, fn stop_update, stop_update_acc ->
+          if stop_update.arrival do
+            Map.put(stop_update_acc, stop_update.stop_id, stop_update.arrival.time)
+          else
+            stop_update_acc
+          end
+        end)
+      end)
+    end)
+    |> Enum.reduce(%{}, fn {stop_id, time}, acc ->
+      Map.put(acc, stop_id, ([acc[stop_id], time_from_now(time)] |> List.flatten |> Enum.reject(& &1 == nil)))
+    end)
+  end
+
+  def extract_trips(nil) do
+    {nil, nil}
+  end
+  def extract_trips({first, second}) do
+    {first, second}
+  end
+
+  defp time_from_now(current_time \\ DateTime.utc_now, diff_time) do
+    {:ok, diff_datetime} = DateTime.from_unix(diff_time)
+    DateTime.diff(diff_datetime, current_time, :second)
   end
 
   defp get_vehicle_archive(group, routes) do
@@ -92,6 +155,17 @@ defmodule GTFSRealtimeViz do
 
       {comment, vehicles_by_stop}
     end)
+  end
+
+  @spec format_times([String.t] | nil) :: [String.t]
+  def format_times(nil) do
+    []
+  end
+  def format_times(time_list) do
+    time_list
+    |> Enum.sort()
+    |> Enum.take(2)
+    |> Enum.map(& "#{&1} seconds")
   end
 
   @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: String.t

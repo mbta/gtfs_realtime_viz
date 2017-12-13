@@ -14,7 +14,7 @@ defmodule GTFSRealtimeViz.State do
 
   @spec init(:ok) :: {:ok, state}
   def init(:ok) do
-    {:ok, %{}}
+    {:ok, %{vehicles: %{}, trip_updates: %{}}}
   end
 
   # client interface
@@ -22,13 +22,19 @@ defmodule GTFSRealtimeViz.State do
   @spec new_data(GenServer.server, term, Proto.raw, String.t) :: :ok
   def new_data(pid \\ __MODULE__, group, raw, comment)
   def new_data(pid, group, raw, comment) do
-    vehicles =
+    data =
       raw
       |> Proto.FeedMessage.decode
       |> Map.get(:entity)
-      |> Enum.map(& &1.vehicle)
+    vehicles = Enum.map(data, & &1.vehicle) |> Enum.reject(& &1 == nil)
+    trip_updates = Enum.map(data, & &1.trip_update) |> Enum.reject(& &1 == nil)
 
-    GenServer.call(pid, {:vehicles, group, vehicles, comment})
+    if !Enum.empty?(vehicles) do
+      GenServer.call(pid, {:vehicles, group, vehicles, comment})
+    end
+    if !Enum.empty?(trip_updates) do
+      GenServer.call(pid, {:trip_updates, group, trip_updates, comment})
+    end
   end
 
   @spec vehicles(GenServer.server, term) :: [{String.t, [Proto.vehicle_position]}]
@@ -39,10 +45,17 @@ defmodule GTFSRealtimeViz.State do
     |> Enum.reverse
   end
 
+  def trip_updates(pid \\ __MODULE__, group)
+  def trip_updates(pid, group) do
+    pid
+    |> GenServer.call({:trip_updates, group})
+    |> Enum.reverse
+  end
+
   # server callbacks
 
   def handle_call({:vehicles, group, vehicles, comment}, _from, state) do
-    new_state = update_in(state, [Access.key(group, [])], fn prev_msgs ->
+    new_vehicles = update_in(state.vehicles, [Access.key(group, [])], fn prev_msgs ->
       max = max_archive()
       msgs = [{comment, vehicles} | prev_msgs]
       if max == :infinity do
@@ -52,10 +65,33 @@ defmodule GTFSRealtimeViz.State do
       end
     end)
 
-    {:reply, :ok, new_state}
+    {:reply, :ok, %{state | vehicles: new_vehicles}}
   end
   def handle_call({:vehicles, group}, _from, state) do
-    {:reply, state[group], state}
+    case state.vehicles[group] do
+      nil -> {:reply, [], state}
+      vehicles -> {:reply, vehicles, state}
+    end
+  end
+
+  def handle_call({:trip_updates, group, trip_updates, comment}, _from, state) do
+    new_trip_updates = update_in(state.trip_updates, [Access.key(group, [])], fn prev_msgs ->
+      max = max_archive()
+      msgs = [{comment, trip_updates} | prev_msgs]
+      if max == :infinity do
+        msgs
+      else
+        Enum.take(msgs, max)
+      end
+    end)
+
+    {:reply, :ok, %{state | trip_updates: new_trip_updates}}
+  end
+  def handle_call({:trip_updates, group}, _from, state) do
+    case state.trip_updates[group] do
+      nil -> {:reply, [], state}
+      trip_updates -> {:reply, trip_updates, state}
+    end
   end
 
   defp max_archive, do: Application.get_env(:gtfs_realtime_viz, :max_archive)
