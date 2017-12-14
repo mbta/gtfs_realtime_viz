@@ -72,7 +72,7 @@ defmodule GTFSRealtimeViz do
     archived = Enum.reduce(trip_set_1, %{}, fn {key, value}, acc ->
       Map.put(acc, key, {value, trip_set_2[key]})
     end)
-    archived = Enum.reduce(trip_set_2, archived, fn {key, value}, acc ->
+    Enum.reduce(trip_set_2, archived, fn {key, value}, acc ->
       Map.put(acc, key, {trip_set_1[key], value})
     end)
   end
@@ -89,7 +89,7 @@ defmodule GTFSRealtimeViz do
       fn {descriptor, update_list} ->
         filtered_positions = update_list
         |> Enum.filter(fn trip_update ->
-          trip_update.trip && trip_update.trip.route_id in routes
+          trip_update.trip.route_id in routes
         end)
         {descriptor, filtered_positions}
       end)

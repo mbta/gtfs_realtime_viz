@@ -643,7 +643,6 @@ defmodule GTFSRealtimeVizTest do
                     [DataHelpers.proto_for_trip_updates("First Route")],
                    }]
 
-
       assert GTFSRealtimeViz.trips_we_care_about(state, routes_we_care_about) == expected
     end
   end

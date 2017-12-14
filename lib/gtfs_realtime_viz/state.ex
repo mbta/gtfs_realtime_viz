@@ -88,10 +88,7 @@ defmodule GTFSRealtimeViz.State do
     {:reply, :ok, %{state | trip_updates: new_trip_updates}}
   end
   def handle_call({:trip_updates, group}, _from, state) do
-    case state.trip_updates[group] do
-      nil -> {:reply, [], state}
-      trip_updates -> {:reply, trip_updates, state}
-    end
+    {:reply, state.trip_updates[group] || [], state}
   end
 
   defp max_archive, do: Application.get_env(:gtfs_realtime_viz, :max_archive)
