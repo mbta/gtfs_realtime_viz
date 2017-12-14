@@ -110,7 +110,7 @@ defmodule GTFSRealtimeViz do
       end)
     end)
     |> Enum.reduce(%{}, fn {stop_id, time}, acc ->
-      Map.put(acc, stop_id, ([acc[stop_id], time_from_now(time)] |> List.flatten |> Enum.reject(& &1 == nil)))
+      Map.put(acc, stop_id, ([acc[stop_id], timestamp(time)] |> List.flatten |> Enum.reject(& &1 == nil)))
     end)
   end
 
@@ -121,9 +121,12 @@ defmodule GTFSRealtimeViz do
     {first, second}
   end
 
-  defp time_from_now(current_time \\ DateTime.utc_now, diff_time) do
-    {:ok, diff_datetime} = DateTime.from_unix(diff_time)
-    DateTime.diff(diff_datetime, current_time, :second)
+  defp timestamp(diff_time) do
+    timezone = Application.get_env(:gtfs_realtime_viz, :timezone)
+    diff_datetime = diff_time
+                    |> DateTime.from_unix!()
+                    |> Timex.Timezone.convert(timezone)
+    diff_datetime
   end
 
   defp get_vehicle_archive(group, routes) do
@@ -165,7 +168,7 @@ defmodule GTFSRealtimeViz do
     time_list
     |> Enum.sort()
     |> Enum.take(2)
-    |> Enum.map(& "#{&1} seconds")
+    |> Enum.map(& "#{Timex.format!(&1, "{h24}:{m}:{s}")}")
   end
 
   @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: String.t
