@@ -58,6 +58,20 @@ defmodule Test.DataHelpers do
 
   end
 
+  def feedmessage_encode_trip_update(route) do
+    %Proto.FeedMessage{
+      header: %Proto.FeedHeader{
+        gtfs_realtime_version: "1.0",
+      },
+      entity: [%Proto.FeedEntity{
+        id: "123",
+        is_deleted: false,
+        trip_update: proto_for_trip_updates(route)
+      }]
+    }
+    |> Proto.FeedMessage.encode
+  end
+
   def proto_for_trip_updates(route) do
     %Proto.TripUpdate{
       delay: nil,

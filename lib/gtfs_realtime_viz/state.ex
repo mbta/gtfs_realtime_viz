@@ -19,22 +19,62 @@ defmodule GTFSRealtimeViz.State do
 
   # client interface
 
-  @spec new_data(GenServer.server, term, Proto.raw, String.t) :: :ok
-  def new_data(pid \\ __MODULE__, group, raw, comment)
-  def new_data(pid, group, raw, comment) do
+  @spec single_pb(GenServer.server, term, Proto.raw, String.t) :: :ok
+  def single_pb(pid \\ __MODULE__, group, raw, comment) do
     data =
       raw
       |> Proto.FeedMessage.decode
       |> Map.get(:entity)
+
     vehicles = Enum.map(data, & &1.vehicle) |> Enum.reject(& &1 == nil)
     trip_updates = Enum.map(data, & &1.trip_update) |> Enum.reject(& &1 == nil)
 
     if !Enum.empty?(vehicles) do
-      GenServer.call(pid, {:vehicles, group, vehicles, comment})
+      new_data(pid, group, raw, nil, comment)
     end
     if !Enum.empty?(trip_updates) do
-      GenServer.call(pid, {:trip_updates, group, trip_updates, comment})
+      new_data(pid, group, nil, raw, comment)
     end
+  end
+
+  @spec new_data(GenServer.server, term, Proto.raw, Proto.raw, String.t) :: :ok
+  def new_data(pid \\ __MODULE__, group, vehicle_positions, trip_updates, comment)
+  def new_data(pid, group, vehicle_positions, nil, comment) do
+    raw_vp =
+      vehicle_positions
+      |> Proto.FeedMessage.decode
+      |> Map.get(:entity)
+
+    vehicles = Enum.map(raw_vp, & &1.vehicle) |> Enum.reject(& &1 == nil)
+    GenServer.call(pid, {:vehicles, group, vehicles, comment})
+    GenServer.call(pid, {:trip_updates, group, %{}, comment})
+  end
+  def new_data(pid, group, nil, trip_updates, comment) do
+    raw_tu =
+      trip_updates
+      |> Proto.FeedMessage.decode
+      |> Map.get(:entity)
+
+    trip_updates = Enum.map(raw_tu, & &1.trip_update) |> Enum.reject(& &1 == nil)
+    GenServer.call(pid, {:vehicles, group, %{}, comment})
+    GenServer.call(pid, {:trip_updates, group, trip_updates, comment})
+  end
+  def new_data(pid, group, vehicle_positions, trip_updates, comment) do
+    raw_vp =
+      vehicle_positions
+      |> Proto.FeedMessage.decode
+      |> Map.get(:entity)
+
+    vehicles = Enum.map(raw_vp, & &1.vehicle) |> Enum.reject(& &1 == nil)
+
+    raw_tu =
+      trip_updates
+      |> Proto.FeedMessage.decode
+      |> Map.get(:entity)
+    trip_updates = Enum.map(raw_tu, & &1.trip_update) |> Enum.reject(& &1 == nil)
+
+    GenServer.call(pid, {:vehicles, group, vehicles, comment})
+    GenServer.call(pid, {:trip_updates, group, trip_updates, comment})
   end
 
   @spec vehicles(GenServer.server, term) :: [{String.t, [Proto.vehicle_position]}]

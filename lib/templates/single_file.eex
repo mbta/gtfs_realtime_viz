@@ -1,4 +1,5 @@
 <%= for {{comment, vehicles_by_stop}, i} <- Enum.with_index(@vehicle_archive) do %>
+  <% trip_updates = Enum.at(@trip_update_archive, i) %>
   <div id="viz-<%= i %>" class="viz-tool viz-hidden">
     <div class="viz-comment"><%= comment %></div>
 
@@ -24,7 +25,7 @@
           <% vs1 = vehicles_by_stop[stop_id_1] || [] %>
           <tr>
             <td>
-              <%= for prediction <- format_times(@trip_update_archive[stop_id_0]) do %>
+              <%= for prediction <- format_times(trip_updates[stop_id_0]) do %>
                 <%= prediction %><br>
               <% end %>
             </td>
@@ -38,7 +39,7 @@
             <td><%= trainify(vs1, :INCOMING_AT, "🚂") %></td>
             <td><%= trainify(vs1, :IN_TRANSIT_TO, "🚂") %></td>
             <td>
-              <%= for prediction <- format_times(@trip_update_archive[stop_id_1]) do %>
+              <%= for prediction <- format_times(trip_updates[stop_id_1]) do %>
                 <%= prediction %><br>
               <% end %>
             </td>

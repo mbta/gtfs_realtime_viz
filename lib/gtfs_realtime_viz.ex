@@ -33,7 +33,11 @@ defmodule GTFSRealtimeViz do
   """
   @spec new_message(term, Proto.raw, String.t) :: :ok
   def new_message(group, raw, comment) do
-    State.new_data(group, raw, comment)
+    State.single_pb(group, raw, comment)
+  end
+
+  def new_message(group, vehicle_positions, trip_updates, comment) do
+    State.new_data(group, vehicle_positions, trip_updates, comment)
   end
 
   @doc """
@@ -61,20 +65,10 @@ defmodule GTFSRealtimeViz do
     trip_archive_1 = get_trip_update_archive(group_1, routes)
     vehicle_archive_2 = get_vehicle_archive(group_2, routes)
     trip_archive_2 = get_trip_update_archive(group_2, routes)
-    trip_archive = archive_trips(trip_archive_1, trip_archive_2)
 
-    [trip_update_archive: trip_archive, vehicle_archive: Enum.zip(vehicle_archive_1, vehicle_archive_2), routes: opts, render_diff?: true]
+    [trip_update_archive: Enum.zip(trip_archive_1, trip_archive_2), vehicle_archive: Enum.zip(vehicle_archive_1, vehicle_archive_2), routes: opts, render_diff?: true]
     |> gen_html()
     |> Phoenix.HTML.safe_to_string()
-  end
-
-  defp archive_trips(trip_set_1, trip_set_2) do
-    archived = Enum.reduce(trip_set_1, %{}, fn {key, value}, acc ->
-      Map.put(acc, key, {value, trip_set_2[key]})
-    end)
-    Enum.reduce(trip_set_2, archived, fn {key, value}, acc ->
-      Map.put(acc, key, {trip_set_1[key], value})
-    end)
   end
 
   defp get_trip_update_archive(group, routes) do
@@ -96,7 +90,7 @@ defmodule GTFSRealtimeViz do
   end
 
   defp trip_updates_by_stop_id(state) do
-    Enum.flat_map(state, fn {_descriptor, trip_updates} ->
+    Enum.map(state, fn {_descriptor, trip_updates} ->
       trip_updates
       |> Enum.flat_map(fn trip_update ->
         trip_update.stop_time_update
@@ -109,8 +103,10 @@ defmodule GTFSRealtimeViz do
         end)
       end)
     end)
-    |> Enum.reduce(%{}, fn {stop_id, time}, acc ->
-      Map.put(acc, stop_id, ([acc[stop_id], timestamp(time)] |> List.flatten |> Enum.reject(& &1 == nil)))
+    |> Enum.map(fn predictions ->
+      Enum.reduce(predictions, %{}, fn {stop_id, time}, acc ->
+        Map.put(acc, stop_id, ([acc[stop_id], timestamp(time)] |> List.flatten |> Enum.reject(& &1 == nil)))
+      end)
     end)
   end
 
