@@ -274,9 +274,10 @@ defmodule GTFSRealtimeVizTest do
       diff_raw = Proto.FeedMessage.encode(diff_data)
 
       routes = %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}
-      GTFSRealtimeViz.new_message(:test_bucket_base, base_raw, "this is the base data")
-      GTFSRealtimeViz.new_message(:test_bucket_diff, diff_raw, "this is the diff data")
-      viz = GTFSRealtimeViz.visualize_diff(:test_bucket_base, :test_bucket_diff, routes)
+      GTFSRealtimeViz.new_message(:test_bucket_base_1, base_raw, "this is the base data")
+      GTFSRealtimeViz.new_message(:test_bucket_diff_1, diff_raw, "this is the diff data")
+      viz = GTFSRealtimeViz.visualize_diff(:test_bucket_base_1, :test_bucket_diff_1, routes)
+      File.write!("output.html", viz)
 
       refute viz =~ "this_is_the_vehicle_id"
     end
@@ -494,9 +495,9 @@ defmodule GTFSRealtimeVizTest do
       diff_trip_raw = Proto.FeedMessage.encode(diff_trips)
 
       routes = %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}
-      GTFSRealtimeViz.new_message(:test_bucket_base, base_raw, base_trip_raw, "this is the base data")
-      GTFSRealtimeViz.new_message(:test_bucket_diff, diff_raw, diff_trip_raw, "this is the diff data")
-      viz = GTFSRealtimeViz.visualize_diff(:test_bucket_base, :test_bucket_diff, routes)
+      GTFSRealtimeViz.new_message(:test_bucket_base_2, base_raw, base_trip_raw, "this is the base data")
+      GTFSRealtimeViz.new_message(:test_bucket_diff_2, diff_raw, diff_trip_raw, "this is the diff data")
+      viz = GTFSRealtimeViz.visualize_diff(:test_bucket_base_2, :test_bucket_diff_2, routes)
 
       refute viz =~ "this_is_the_vehicle_id"
     end
@@ -604,10 +605,10 @@ defmodule GTFSRealtimeVizTest do
       diff_raw = Proto.FeedMessage.encode(diff_data)
 
       routes = %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}
-      GTFSRealtimeViz.new_message(:test_bucket_base, base_raw, "this is the base data")
-      GTFSRealtimeViz.new_message(:test_bucket_base, base_trip_raw, "this is the base data")
-      GTFSRealtimeViz.new_message(:test_bucket_diff, diff_raw, "this is the diff data")
-      viz = GTFSRealtimeViz.visualize_diff(:test_bucket_base, :test_bucket_diff, routes)
+      GTFSRealtimeViz.new_message(:test_bucket_base_3, base_raw, "this is the base data")
+      GTFSRealtimeViz.new_message(:test_bucket_base_3, base_trip_raw, "this is the base data")
+      GTFSRealtimeViz.new_message(:test_bucket_diff_3, diff_raw, "this is the diff data")
+      viz = GTFSRealtimeViz.visualize_diff(:test_bucket_base_3, :test_bucket_diff_3, routes)
 
       refute viz =~ "this_is_the_vehicle_id"
     end
