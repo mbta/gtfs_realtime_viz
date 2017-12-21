@@ -24,9 +24,9 @@ In both cases, run `mix deps.get` afterwards.
 
 ## Configuration
 
-There are two configuration options.
+There are three configuration options.
 
-One is `routes`, which will tell the tool to generate a simple ASCII art ladder diagram. That option is a map of all the routes you want ladders for, and a list of stations along that route in order. Each station is a list of three items: the station name you want displayed on the ladder, the stop ID for `direction_id == 0` and the stop ID for `direction_id == 1` at that station. This will be passed into visualize as the second argument.
+The first two are `routes` and `timezone`, which will tell the tool to generate a simple ASCII art ladder diagram, and which time zone to display predictions in. `routes` is a map of all the routes you want ladders for, and a list of stations along that route in order. Each station is a list of three items: the station name you want displayed on the ladder, the stop ID for `direction_id == 0` and the stop ID for `direction_id == 1` at that station. Timezone is a string representing the time zone that should be used, ie: `"US/Eastern"`. This will be passed into visualize as the second argument.
 
 For example:
 
@@ -43,8 +43,11 @@ routes = %{
     {"Mattapan", "70275", "70276"},
   ]
 }
+timezone = "US/Eastern"
 
-GTFSRealtimeViz.visualize(:prod, routes)
+opts = %{routes: routes, timezone: timezone}
+
+GTFSRealtimeViz.visualize(:prod, opts)
 ```
 
 The second configuration option is `max_archive` and determines how many protobuf messages the app will store. The visualization generates static HTML that allows you to page through visualizations, so the page can grow quite large if you configure a large `max_archive`. For cases where you're not worried about running out of memory (say, experimenting or debugging locally), you can use `:infinity`. An example configuration might be:
@@ -72,5 +75,5 @@ To generate HTML, run `GTFSRealtimeViz.visualize/1`. This will return a `String.
 If you just want a standalone file to open in a browser, you might run:
 
 ```ex
-iex> File.write!("/path/to/file.html", GTFSRealtimeViz.visualize(:prod, %{"Route" => [{"First stop", "123", "124"},  {"Second stop" , "125", "126"}]))
+iex> File.write!("/path/to/file.html", GTFSRealtimeViz.visualize(:prod, %{routes: %{"Route" => [{"First stop", "123", "124"},  {"Second stop" , "125", "126"}]}, timezone: "US/Eastern"}))
 ```

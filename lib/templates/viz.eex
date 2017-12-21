@@ -21,7 +21,7 @@
     padding: 0 1em;
   }
   .viz-tool .viz-position {
-    width: 14%;
+    width: 10%;
   }
   .viz-tool.viz-hidden {
     display: none;
@@ -32,9 +32,9 @@
 <button id="viz-tool-next-button">Next</button>
 
 <%= if @render_diff? do %>
-  <%= render_diff(vehicle_archive: @vehicle_archive, routes: @routes) %>
+  <%= render_diff(trip_update_archive: @trip_update_archive, vehicle_archive: @vehicle_archive, routes: @routes) %>
 <% else %>
-  <%= render_single_file(vehicle_archive: @vehicle_archive, routes: @routes) %>
+  <%= render_single_file(trip_update_archive: @trip_update_archive, vehicle_archive: @vehicle_archive, routes: @routes) %>
 <% end %>
 
 <script>

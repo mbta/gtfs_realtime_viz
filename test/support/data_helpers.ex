@@ -57,4 +57,52 @@ defmodule Test.DataHelpers do
     end)
 
   end
+
+  def feedmessage_encode_trip_update(route) do
+    %Proto.FeedMessage{
+      header: %Proto.FeedHeader{
+        gtfs_realtime_version: "1.0",
+      },
+      entity: [%Proto.FeedEntity{
+        id: "123",
+        is_deleted: false,
+        trip_update: proto_for_trip_updates(route)
+      }]
+    }
+    |> Proto.FeedMessage.encode
+  end
+
+  def proto_for_trip_updates(route) do
+    %Proto.TripUpdate{
+      delay: nil,
+      stop_time_update: [
+        %GTFSRealtimeViz.Proto.TripUpdate.StopTimeUpdate{
+          arrival: %GTFSRealtimeViz.Proto.TripUpdate.StopTimeEvent{
+            delay: nil,
+            time: 1512760579,
+            uncertainty: nil
+          },
+          departure: %GTFSRealtimeViz.Proto.TripUpdate.StopTimeEvent{
+            delay: nil,
+            time: 1512760579,
+            uncertainty: nil
+          },
+          schedule_relationship: :SCHEDULED,
+          stop_id: "this_is_the_stop_id",
+          stop_sequence: 280
+        }
+      ],
+      timestamp: nil,
+      trip: %Proto.TripDescriptor{
+        trip_id: "this_is_the_trip_id",
+        route_id: route,
+        direction_id: 0,
+      },
+      vehicle: %GTFSRealtimeViz.Proto.VehicleDescriptor{
+        id: "this_is_the_vehicle_id",
+        label: "this_is_the_vehicle_label",
+        license_plate: nil
+      }
+    }
+  end
 end

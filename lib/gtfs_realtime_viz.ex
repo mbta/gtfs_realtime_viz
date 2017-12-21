@@ -11,7 +11,7 @@ defmodule GTFSRealtimeViz do
   $ iex -S mix
   iex(1)> proto = File.read!("filename.pb")
   iex(2)> GTFSRealtimeViz.new_message(:prod, proto, "first protobuf file")
-  iex(3)> File.write!("output.html", GTFSRealtimeViz.visualize(:prod))
+  iex(3)> File.write!("output.html", GTFSRealtimeViz.visualize(:prod, %{}))
   ```
   """
 
@@ -33,7 +33,11 @@ defmodule GTFSRealtimeViz do
   """
   @spec new_message(term, Proto.raw, String.t) :: :ok
   def new_message(group, raw, comment) do
-    State.new_data(group, raw, comment)
+    State.single_pb(group, raw, comment)
+  end
+
+  def new_message(group, vehicle_positions, trip_updates, comment) do
+    State.new_data(group, vehicle_positions, trip_updates, comment)
   end
 
   @doc """
@@ -42,9 +46,10 @@ defmodule GTFSRealtimeViz do
   """
   @spec visualize(term, route_opts) :: String.t
   def visualize(group, opts) do
-    routes = Map.keys(opts)
+    routes = Map.keys(opts[:routes])
     vehicle_archive = get_vehicle_archive(group, routes)
-    [vehicle_archive: vehicle_archive, routes: opts, render_diff?: false]
+    trip_update_archive = get_trip_update_archive(group, routes, opts[:timezone])
+    [trip_update_archive: trip_update_archive, vehicle_archive: vehicle_archive, routes: opts[:routes], render_diff?: false]
     |> gen_html
     |> Phoenix.HTML.safe_to_string
   end
@@ -55,12 +60,61 @@ defmodule GTFSRealtimeViz do
   """
   @spec visualize_diff(term, term, route_opts) :: String.t
   def visualize_diff(group_1, group_2, opts) do
-    routes = Map.keys(opts)
-    archive_1 = get_vehicle_archive(group_1, routes)
-    archive_2 = get_vehicle_archive(group_2, routes)
-    [vehicle_archive: Enum.zip(archive_1, archive_2), routes: opts, render_diff?: true]
+    routes = Map.keys(opts[:routes])
+    vehicle_archive_1 = get_vehicle_archive(group_1, routes)
+    trip_archive_1 = get_trip_update_archive(group_1, routes, opts[:timezone])
+    vehicle_archive_2 = get_vehicle_archive(group_2, routes)
+    trip_archive_2 = get_trip_update_archive(group_2, routes, opts[:timezone])
+
+    [trip_update_archive: Enum.zip(trip_archive_1, trip_archive_2), vehicle_archive: Enum.zip(vehicle_archive_1, vehicle_archive_2), routes: opts[:routes], render_diff?: true]
     |> gen_html()
     |> Phoenix.HTML.safe_to_string()
+  end
+
+  defp get_trip_update_archive(group, routes, timezone) do
+    group
+    |> State.trip_updates
+    |> trips_we_care_about(routes)
+    |> trip_updates_by_stop_id(timezone)
+  end
+
+  def trips_we_care_about(state, routes) do
+    Enum.map(state,
+      fn {descriptor, update_list} ->
+        filtered_positions = update_list
+        |> Enum.filter(fn trip_update ->
+          trip_update.trip.route_id in routes
+        end)
+        {descriptor, filtered_positions}
+      end)
+  end
+
+  defp trip_updates_by_stop_id(state, timezone) do
+    Enum.map(state, fn {_descriptor, trip_updates} ->
+      trip_updates
+      |> Enum.flat_map(fn trip_update ->
+        trip_update.stop_time_update
+        |> Enum.reduce(%{}, fn stop_update, stop_update_acc ->
+          if stop_update.arrival do
+            Map.put(stop_update_acc, stop_update.stop_id, stop_update.arrival.time)
+          else
+            stop_update_acc
+          end
+        end)
+      end)
+    end)
+    |> Enum.map(fn predictions ->
+      Enum.reduce(predictions, %{}, fn {stop_id, time}, acc ->
+        Map.update(acc, stop_id, [timestamp(time, timezone)], fn timestamps -> timestamps ++ [timestamp(time, timezone)] end)
+      end)
+    end)
+  end
+
+  defp timestamp(diff_time, timezone) do
+    diff_datetime = diff_time
+                    |> DateTime.from_unix!()
+                    |> Timex.Timezone.convert(timezone)
+    diff_datetime
   end
 
   defp get_vehicle_archive(group, routes) do
@@ -92,6 +146,17 @@ defmodule GTFSRealtimeViz do
 
       {comment, vehicles_by_stop}
     end)
+  end
+
+  @spec format_times([String.t] | nil) :: [String.t]
+  def format_times(nil) do
+    []
+  end
+  def format_times(time_list) do
+    time_list
+    |> Enum.sort()
+    |> Enum.take(2)
+    |> Enum.map(& "#{Timex.format!(&1, "{h24}:{m}:{s}")}")
   end
 
   @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: String.t
