@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0
+
+* Visualizer can now display predictions alongside the vehicle positions in the ladder view,
+  if given a TripUpdates.pb file.
+
 ## 0.4.0
 
 * Visualizer now uses the vehicle label instead of vehicle ID
