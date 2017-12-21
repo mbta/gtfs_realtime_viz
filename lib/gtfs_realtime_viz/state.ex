@@ -91,19 +91,6 @@ defmodule GTFSRealtimeViz.State do
 
   # server callbacks
 
-  def handle_call({:vehicles, group, vehicles, comment}, _from, state) do
-    new_vehicles = update_in(state.vehicles, [Access.key(group, [])], fn prev_msgs ->
-      max = max_archive()
-      msgs = [{comment, vehicles} | prev_msgs]
-      if max == :infinity do
-        msgs
-      else
-        Enum.take(msgs, max)
-      end
-    end)
-
-    {:reply, :ok, %{state | vehicles: new_vehicles}}
-  end
   def handle_call({:vehicles, group}, _from, state) do
     case state.vehicles[group] do
       nil -> {:reply, [], state}
@@ -111,19 +98,6 @@ defmodule GTFSRealtimeViz.State do
     end
   end
 
-  def handle_call({:trip_updates, group, trip_updates, comment}, _from, state) do
-    new_trip_updates = update_in(state.trip_updates, [Access.key(group, [])], fn prev_msgs ->
-      max = max_archive()
-      msgs = [{comment, trip_updates} | prev_msgs]
-      if max == :infinity do
-        msgs
-      else
-        Enum.take(msgs, max)
-      end
-    end)
-
-    {:reply, :ok, %{state | trip_updates: new_trip_updates}}
-  end
   def handle_call({:trip_updates, group}, _from, state) do
     {:reply, state.trip_updates[group] || [], state}
   end
