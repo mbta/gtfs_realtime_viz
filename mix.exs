@@ -18,7 +18,6 @@ defmodule GTFSRealtimeViz.Mixfile do
 
   def application do
     [
-      apps: [:timex],
       extra_applications: [:logger],
       mod: {GTFSRealtimeViz.Application, []},
       env: env(),
