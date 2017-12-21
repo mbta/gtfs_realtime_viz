@@ -36,7 +36,7 @@ defmodule GTFSRealtimeVizTest do
     raw = Proto.FeedMessage.encode(data)
 
     GTFSRealtimeViz.new_message(:test, raw, "this is the test data")
-    viz = GTFSRealtimeViz.visualize(:test, %{"route" => [{"stop", "this_is_the_stop_id", "outbound"}]})
+    viz = GTFSRealtimeViz.visualize(:test, %{routes: %{"route" => [{"stop", "this_is_the_stop_id", "outbound"}]}})
 
     assert viz =~ "this is the test data"
     assert viz =~ "this_is_the_vehicle_id"
@@ -74,7 +74,7 @@ defmodule GTFSRealtimeVizTest do
     raw = Proto.FeedMessage.encode(data)
 
     GTFSRealtimeViz.new_message(:test, raw, "this is the test data")
-    viz = GTFSRealtimeViz.visualize(:test, %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]})
+    viz = GTFSRealtimeViz.visualize(:test, %{routes: %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}})
 
     assert viz =~ "this is the test data"
     assert viz =~ "this_is_the_vehicle_id"
@@ -115,7 +115,7 @@ defmodule GTFSRealtimeVizTest do
     raw = Proto.FeedMessage.encode(data)
 
     GTFSRealtimeViz.new_message(:test, raw, "this is the test data")
-    viz = GTFSRealtimeViz.visualize(:test, %{"First Route" => [{"FR Only Stop", "this_is_the_stop_id", "124"}], "Second Route" => [{"SR Only Stop", "125", "126"}]})
+    viz = GTFSRealtimeViz.visualize(:test, %{routes: %{"First Route" => [{"FR Only Stop", "this_is_the_stop_id", "124"}], "Second Route" => [{"SR Only Stop", "125", "126"}]}})
 
     assert viz =~ "First Route"
     assert viz =~ "FR Only Stop"
@@ -175,7 +175,7 @@ defmodule GTFSRealtimeVizTest do
     raw = Proto.FeedMessage.encode(data)
 
     GTFSRealtimeViz.new_message(:test, raw, "this is the test data")
-    viz = GTFSRealtimeViz.visualize(:test, %{"First Route" => [{"FR Only Stop", "this_is_the_stop_id", "124"}]})
+    viz = GTFSRealtimeViz.visualize(:test, %{routes: %{"First Route" => [{"FR Only Stop", "this_is_the_stop_id", "124"}]}})
 
     refute viz =~ "other_route"
     refute viz =~ "different_vehicle"
@@ -273,10 +273,10 @@ defmodule GTFSRealtimeVizTest do
       base_raw = Proto.FeedMessage.encode(base_data)
       diff_raw = Proto.FeedMessage.encode(diff_data)
 
-      routes = %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}
+      opts = %{routes: %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}}
       GTFSRealtimeViz.new_message(:test_bucket_base_1, base_raw, "this is the base data")
       GTFSRealtimeViz.new_message(:test_bucket_diff_1, diff_raw, "this is the diff data")
-      viz = GTFSRealtimeViz.visualize_diff(:test_bucket_base_1, :test_bucket_diff_1, routes)
+      viz = GTFSRealtimeViz.visualize_diff(:test_bucket_base_1, :test_bucket_diff_1, opts)
       File.write!("output.html", viz)
 
       refute viz =~ "this_is_the_vehicle_id"
@@ -341,10 +341,10 @@ defmodule GTFSRealtimeVizTest do
       base_raw = Proto.FeedMessage.encode(base_data)
       diff_raw = Proto.FeedMessage.encode(diff_data)
 
-      routes = %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}
+      opts = %{routes: %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}}
       GTFSRealtimeViz.new_message(:test_base, base_raw, "this is the base data")
       GTFSRealtimeViz.new_message(:test_diff, diff_raw, "this is the diff data")
-      viz = GTFSRealtimeViz.visualize_diff(:test_base, :test_diff, routes)
+      viz = GTFSRealtimeViz.visualize_diff(:test_base, :test_diff, opts)
 
       assert viz =~ "this_is_the_vehicle_id"
     end
@@ -494,10 +494,10 @@ defmodule GTFSRealtimeVizTest do
       diff_raw = Proto.FeedMessage.encode(diff_data)
       diff_trip_raw = Proto.FeedMessage.encode(diff_trips)
 
-      routes = %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}
+      opts = %{timezone: "US/Eastern", routes: %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}}
       GTFSRealtimeViz.new_message(:test_bucket_base_2, base_raw, base_trip_raw, "this is the base data")
       GTFSRealtimeViz.new_message(:test_bucket_diff_2, diff_raw, diff_trip_raw, "this is the diff data")
-      viz = GTFSRealtimeViz.visualize_diff(:test_bucket_base_2, :test_bucket_diff_2, routes)
+      viz = GTFSRealtimeViz.visualize_diff(:test_bucket_base_2, :test_bucket_diff_2, opts)
 
       refute viz =~ "this_is_the_vehicle_id"
     end
@@ -604,7 +604,7 @@ defmodule GTFSRealtimeVizTest do
       base_trip_raw = Proto.FeedMessage.encode(base_trips)
       diff_raw = Proto.FeedMessage.encode(diff_data)
 
-      routes = %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}
+      routes = %{routes: %{"Route" => [{"First Stop", "this_is_the_stop_id", "124"}, {"Middle Stop", "125", "126"}, {"End Stop", "127", "128"}]}}
       GTFSRealtimeViz.new_message(:test_bucket_base_3, base_raw, "this is the base data")
       GTFSRealtimeViz.new_message(:test_bucket_base_3, base_trip_raw, "this is the base data")
       GTFSRealtimeViz.new_message(:test_bucket_diff_3, diff_raw, "this is the diff data")

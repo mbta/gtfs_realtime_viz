@@ -46,10 +46,10 @@ defmodule GTFSRealtimeViz do
   """
   @spec visualize(term, route_opts) :: String.t
   def visualize(group, opts) do
-    routes = Map.keys(opts)
+    routes = Map.keys(opts[:routes])
     vehicle_archive = get_vehicle_archive(group, routes)
-    trip_update_archive = get_trip_update_archive(group, routes)
-    [trip_update_archive: trip_update_archive, vehicle_archive: vehicle_archive, routes: opts, render_diff?: false]
+    trip_update_archive = get_trip_update_archive(group, routes, opts[:timezone])
+    [trip_update_archive: trip_update_archive, vehicle_archive: vehicle_archive, routes: opts[:routes], render_diff?: false]
     |> gen_html
     |> Phoenix.HTML.safe_to_string
   end
@@ -60,22 +60,22 @@ defmodule GTFSRealtimeViz do
   """
   @spec visualize_diff(term, term, route_opts) :: String.t
   def visualize_diff(group_1, group_2, opts) do
-    routes = Map.keys(opts)
+    routes = Map.keys(opts[:routes])
     vehicle_archive_1 = get_vehicle_archive(group_1, routes)
-    trip_archive_1 = get_trip_update_archive(group_1, routes)
+    trip_archive_1 = get_trip_update_archive(group_1, routes, opts[:timezone])
     vehicle_archive_2 = get_vehicle_archive(group_2, routes)
-    trip_archive_2 = get_trip_update_archive(group_2, routes)
+    trip_archive_2 = get_trip_update_archive(group_2, routes, opts[:timezone])
 
-    [trip_update_archive: Enum.zip(trip_archive_1, trip_archive_2), vehicle_archive: Enum.zip(vehicle_archive_1, vehicle_archive_2), routes: opts, render_diff?: true]
+    [trip_update_archive: Enum.zip(trip_archive_1, trip_archive_2), vehicle_archive: Enum.zip(vehicle_archive_1, vehicle_archive_2), routes: opts[:routes], render_diff?: true]
     |> gen_html()
     |> Phoenix.HTML.safe_to_string()
   end
 
-  defp get_trip_update_archive(group, routes) do
+  defp get_trip_update_archive(group, routes, timezone) do
     group
     |> State.trip_updates
     |> trips_we_care_about(routes)
-    |> trip_updates_by_stop_id
+    |> trip_updates_by_stop_id(timezone)
   end
 
   def trips_we_care_about(state, routes) do
@@ -89,7 +89,7 @@ defmodule GTFSRealtimeViz do
       end)
   end
 
-  defp trip_updates_by_stop_id(state) do
+  defp trip_updates_by_stop_id(state, timezone) do
     Enum.map(state, fn {_descriptor, trip_updates} ->
       trip_updates
       |> Enum.flat_map(fn trip_update ->
@@ -105,20 +105,12 @@ defmodule GTFSRealtimeViz do
     end)
     |> Enum.map(fn predictions ->
       Enum.reduce(predictions, %{}, fn {stop_id, time}, acc ->
-        Map.put(acc, stop_id, ([acc[stop_id], timestamp(time)] |> List.flatten |> Enum.reject(& &1 == nil)))
+        Map.update(acc, stop_id, [timestamp(time, timezone)], fn timestamps -> timestamps ++ [timestamp(time, timezone)] end)
       end)
     end)
   end
 
-  def extract_trips(nil) do
-    {nil, nil}
-  end
-  def extract_trips({first, second}) do
-    {first, second}
-  end
-
-  defp timestamp(diff_time) do
-    timezone = Application.get_env(:gtfs_realtime_viz, :timezone)
+  defp timestamp(diff_time, timezone) do
     diff_datetime = diff_time
                     |> DateTime.from_unix!()
                     |> Timex.Timezone.convert(timezone)
