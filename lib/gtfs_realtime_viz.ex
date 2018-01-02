@@ -148,7 +148,7 @@ defmodule GTFSRealtimeViz do
     end)
   end
 
-  @spec format_times([String.t] | nil) :: [iodata]
+  @spec format_times([String.t] | nil) :: [Phoenix.HTML.Safe.t]
   def format_times(nil) do
     []
   end
@@ -162,15 +162,15 @@ defmodule GTFSRealtimeViz do
     end)
   end
 
-  @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: String.t
+  @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: iodata
   defp trainify(vehicles, status, ascii_train) do
     vehicles
     |> vehicles_with_status(status)
     |> Enum.map(& "#{ascii_train} (#{&1.vehicle && &1.vehicle.label})")
-    |> Enum.join(",")
+    |> Enum.intersperse(",")
   end
 
-  @spec trainify_diff([Proto.vehicle_position], [Proto.vehicle_position], Proto.vehicle_position_statuses, String.t, String.t) :: String.t
+  @spec trainify_diff([Proto.vehicle_position], [Proto.vehicle_position], Proto.vehicle_position_statuses, String.t, String.t) :: Phoenix.HTML.Safe.t
   defp trainify_diff(vehicles_base, vehicles_diff, status, ascii_train_base, ascii_train_diff) do
     base = vehicles_with_status(vehicles_base, status) |> Enum.map(& &1.vehicle && &1.vehicle.id)
     diff = vehicles_with_status(vehicles_diff, status) |> Enum.map(& &1.vehicle && &1.vehicle.id)
@@ -181,14 +181,13 @@ defmodule GTFSRealtimeViz do
     [unique_base, unique_diff]
     |> List.flatten()
     |> Enum.map(&span_for_id/1)
-    |> Enum.join(",")
+    |> Enum.intersperse(",")
   end
 
   defp span_for_id({ascii, id}) do
     tag_opts = [class: "vehicle-#{id}", onmouseover: "highlight(#{id}, 'red')", onmouseout: "highlight(#{id}, 'black')"]
     :span
     |> Phoenix.HTML.Tag.content_tag("#{ascii} (#{id})", tag_opts)
-    |> Phoenix.HTML.safe_to_string()
   end
 
   # removes any vehicles that appear in given list

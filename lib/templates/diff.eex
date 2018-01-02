@@ -43,25 +43,25 @@
               <% end %>
             </td>
             <td>
-              <%= Phoenix.HTML.raw trainify_diff(vs0_base, vs0_diff, :IN_TRANSIT_TO, "🚂", "👻")%>
+              <%= trainify_diff(vs0_base, vs0_diff, :IN_TRANSIT_TO, "🚂", "👻")%>
             </td>
             <td>
-              <%= Phoenix.HTML.raw trainify_diff(vs0_base, vs0_diff, :INCOMING_AT, "🚂", "👻")%>
+              <%= trainify_diff(vs0_base, vs0_diff, :INCOMING_AT, "🚂", "👻")%>
             </td>
             <td>
-              <%= Phoenix.HTML.raw trainify_diff(vs0_base, vs0_diff, :STOPPED_AT, "🚂", "👻")%>
+              <%= trainify_diff(vs0_base, vs0_diff, :STOPPED_AT, "🚂", "👻")%>
             </td>
             <td>
               <%= stop_name %>
             </td>
             <td>
-              <%= Phoenix.HTML.raw trainify_diff(vs1_base, vs1_diff, :STOPPED_AT, "🚂", "👻")%>
+              <%= trainify_diff(vs1_base, vs1_diff, :STOPPED_AT, "🚂", "👻")%>
             </td>
             <td>
-              <%= Phoenix.HTML.raw trainify_diff(vs1_base, vs1_diff, :INCOMING_AT, "🚂", "👻")%>
+              <%= trainify_diff(vs1_base, vs1_diff, :INCOMING_AT, "🚂", "👻")%>
             </td>
             <td>
-              <%= Phoenix.HTML.raw trainify_diff(vs1_base, vs1_diff, :IN_TRANSIT_TO, "🚂", "👻")%>
+              <%= trainify_diff(vs1_base, vs1_diff, :IN_TRANSIT_TO, "🚂", "👻")%>
             </td>
             <td>
               <%= for prediction <- format_times(base_trips_1) do %>
