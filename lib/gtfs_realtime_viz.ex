@@ -75,7 +75,7 @@ defmodule GTFSRealtimeViz do
     group
     |> State.trip_updates
     |> trips_we_care_about(routes)
-    |> trip_updates_by_stop_id(timezone)
+    |> trip_updates_by_stop_direction_id(timezone)
   end
 
   def trips_we_care_about(state, routes) do
@@ -89,14 +89,14 @@ defmodule GTFSRealtimeViz do
       end)
   end
 
-  defp trip_updates_by_stop_id(state, timezone) do
+  defp trip_updates_by_stop_direction_id(state, timezone) do
     Enum.map(state, fn {_descriptor, trip_updates} ->
       trip_updates
       |> Enum.flat_map(fn trip_update ->
         trip_update.stop_time_update
         |> Enum.reduce(%{}, fn stop_update, stop_update_acc ->
           if stop_update.arrival && stop_update.arrival.time do
-            Map.put(stop_update_acc, stop_update.stop_id, {trip_update.trip.trip_id, stop_update.arrival.time})
+            Map.put(stop_update_acc, {stop_update.stop_id, trip_update.trip.direction_id}, {trip_update.trip.trip_id, stop_update.arrival.time})
           else
             stop_update_acc
           end
@@ -121,7 +121,7 @@ defmodule GTFSRealtimeViz do
     group
     |> State.vehicles
     |> vehicles_we_care_about(routes)
-    |> vehicles_by_stop_id()
+    |> vehicles_by_stop_direction_id()
   end
 
   def vehicles_we_care_about(state, routes) do
@@ -135,11 +135,11 @@ defmodule GTFSRealtimeViz do
       end)
   end
 
-  @spec vehicles_by_stop_id([{String.t, [Proto.vehicle_position]}]) :: [{String.t, %{required(String.t) => [Proto.vehicle_position]}}]
-  defp vehicles_by_stop_id(state) do
+  @spec vehicles_by_stop_direction_id([{String.t, [Proto.vehicle_position]}]) :: [{String.t, %{required(String.t) => [Proto.vehicle_position]}}]
+  defp vehicles_by_stop_direction_id(state) do
     Enum.map(state, fn {comment, vehicles} ->
       vehicles_by_stop = Enum.reduce(vehicles, %{}, fn v, acc ->
-        update_in acc, [v.stop_id], fn vs ->
+        update_in acc, [{v.stop_id, v.trip.direction_id}], fn vs ->
           [v | (vs || [])]
         end
       end)
@@ -188,7 +188,7 @@ defmodule GTFSRealtimeViz do
       is_nil(base) or is_nil(diff) or DateTime.compare(base, diff) != :eq do
       {format_time({trip_id, base}), format_time({trip_id, diff})}
     end
-      Enum.take(trips, 2)
+    Enum.take(trips, 2)
   end
 
   @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: iodata
