@@ -95,7 +95,7 @@ defmodule GTFSRealtimeViz do
       |> Enum.flat_map(fn trip_update ->
         trip_update.stop_time_update
         |> Enum.reduce(%{}, fn stop_update, stop_update_acc ->
-          if stop_update.arrival do
+          if stop_update.arrival && stop_update.arrival.time do
             Map.put(stop_update_acc, stop_update.stop_id, stop_update.arrival.time)
           else
             stop_update_acc
