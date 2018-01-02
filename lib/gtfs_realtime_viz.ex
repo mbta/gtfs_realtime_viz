@@ -96,7 +96,7 @@ defmodule GTFSRealtimeViz do
         trip_update.stop_time_update
         |> Enum.reduce(%{}, fn stop_update, stop_update_acc ->
           if stop_update.arrival && stop_update.arrival.time do
-            Map.put(stop_update_acc, stop_update.stop_id, stop_update.arrival.time)
+            Map.put(stop_update_acc, stop_update.stop_id, {trip_update.trip.trip_id, stop_update.arrival.time})
           else
             stop_update_acc
           end
@@ -104,8 +104,8 @@ defmodule GTFSRealtimeViz do
       end)
     end)
     |> Enum.map(fn predictions ->
-      Enum.reduce(predictions, %{}, fn {stop_id, time}, acc ->
-        Map.update(acc, stop_id, [timestamp(time, timezone)], fn timestamps -> timestamps ++ [timestamp(time, timezone)] end)
+      Enum.reduce(predictions, %{}, fn {stop_id, {trip_id, time}}, acc ->
+        Map.update(acc, stop_id, [{trip_id, timestamp(time, timezone)}], fn timestamps -> timestamps ++ [{trip_id, timestamp(time, timezone)}] end)
       end)
     end)
   end
@@ -148,7 +148,7 @@ defmodule GTFSRealtimeViz do
     end)
   end
 
-  @spec format_times([String.t] | nil) :: [String.t]
+  @spec format_times([String.t] | nil) :: [iodata]
   def format_times(nil) do
     []
   end
@@ -156,7 +156,10 @@ defmodule GTFSRealtimeViz do
     time_list
     |> Enum.sort()
     |> Enum.take(2)
-    |> Enum.map(& "#{Timex.format!(&1, "{h24}:{m}:{s}")}")
+    |> Enum.map(fn {trip_id, time} ->
+      ascii = Timex.format!(time, "{h24}:{m}:{s}")
+      span_for_id({ascii, trip_id})
+    end)
   end
 
   @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: String.t
