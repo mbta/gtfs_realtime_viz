@@ -35,11 +35,13 @@
 
           <tr>
             <td>
-              <%= for prediction <- format_times(base_trips_0) do %>
-                🚂 <%= prediction %><br>
-              <% end %>
-              <%= for prediction <- format_times(diff_trips_0) do %>
-                👻 <%= prediction %><br>
+              <%= for {base_prediction, diff_prediction} <- format_time_diff(base_trips_0, diff_trips_0) do %>
+                <%= if base_prediction do %>
+                  🚂 <%= base_prediction %><br>
+                <% end %>
+                <%= if diff_prediction do %>
+                  👻 <%= diff_prediction %><br>
+                <% end %>
               <% end %>
             </td>
             <td>
@@ -64,11 +66,13 @@
               <%= trainify_diff(vs1_base, vs1_diff, :IN_TRANSIT_TO, "🚂", "👻")%>
             </td>
             <td>
-              <%= for prediction <- format_times(base_trips_1) do %>
-                🚂 <%= prediction %><br>
-              <% end %>
-              <%= for prediction <- format_times(diff_trips_1) do %>
-                👻 <%= prediction %><br>
+              <%= for {base_prediction, diff_prediction} <- format_time_diff(base_trips_1, diff_trips_1) do %>
+                <%= if base_prediction do %>
+                  🚂 <%= base_prediction %><br>
+                <% end %>
+                <%= if diff_prediction do %>
+                  👻 <%= diff_prediction %><br>
+                <% end %>
               <% end %>
             </td>
           </tr>

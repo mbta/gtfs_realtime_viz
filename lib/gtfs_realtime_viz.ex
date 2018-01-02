@@ -148,7 +148,7 @@ defmodule GTFSRealtimeViz do
     end)
   end
 
-  @spec format_times([String.t] | nil) :: [Phoenix.HTML.Safe.t]
+  @spec format_times([{String.t, DateTime.t}] | nil) :: [Phoenix.HTML.Safe.t]
   def format_times(nil) do
     []
   end
@@ -156,10 +156,39 @@ defmodule GTFSRealtimeViz do
     time_list
     |> Enum.sort()
     |> Enum.take(2)
-    |> Enum.map(fn {trip_id, time} ->
-      ascii = Timex.format!(time, "{h24}:{m}:{s}")
-      span_for_id({ascii, trip_id})
-    end)
+    |> Enum.map(&format_time/1)
+  end
+
+  defp format_time({_, nil}) do
+    nil
+  end
+  defp format_time({trip_id, time}) do
+    ascii = Timex.format!(time, "{h24}:{m}:{s}")
+    span_for_id({ascii, trip_id})
+  end
+
+  @spec format_time_diff(time_list, time_list) :: [{time_output, time_output}]
+  when time_list: {String.t, DateTime.t} | nil, time_output: Phoenix.HTML.Safe.t | nil
+  def format_time_diff(base_list, nil) do
+    for format <- format_times(base_list) do
+      {format, nil}
+    end
+  end
+  def format_time_diff(nil, diff_list) do
+    for format <- format_times(diff_list) do
+      {nil, format}
+    end
+  end
+  def format_time_diff(base_list, diff_list) do
+    base_map = Map.new(base_list)
+    diff_map = Map.new(diff_list)
+    trips = for trip_id <- Map.keys(Map.merge(base_map, diff_map)),
+      base = base_map[trip_id],
+      diff = diff_map[trip_id],
+      is_nil(base) or is_nil(diff) or DateTime.compare(base, diff) != :eq do
+      {format_time({trip_id, base}), format_time({trip_id, diff})}
+    end
+      Enum.take(trips, 2)
   end
 
   @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: iodata
