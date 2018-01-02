@@ -214,7 +214,7 @@ defmodule GTFSRealtimeViz do
   end
 
   defp span_for_id({ascii, id}) do
-    tag_opts = [class: "vehicle-#{id}", onmouseover: "highlight(#{id}, 'red')", onmouseout: "highlight(#{id}, 'black')"]
+    tag_opts = [class: "vehicle-#{id}", onmouseover: "highlight('#{id}', 'red')", onmouseout: "highlight('#{id}', 'black')"]
     :span
     |> Phoenix.HTML.Tag.content_tag("#{ascii} (#{id})", tag_opts)
   end
