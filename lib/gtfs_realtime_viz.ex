@@ -95,8 +95,8 @@ defmodule GTFSRealtimeViz do
       |> Enum.flat_map(fn trip_update ->
         trip_update.stop_time_update
         |> Enum.reduce(%{}, fn stop_update, stop_update_acc ->
-          if stop_update.arrival do
-            Map.put(stop_update_acc, stop_update.stop_id, stop_update.arrival.time)
+          if stop_update.arrival && stop_update.arrival.time do
+            Map.put(stop_update_acc, stop_update.stop_id, {trip_update.trip.trip_id, stop_update.arrival.time})
           else
             stop_update_acc
           end
@@ -104,8 +104,8 @@ defmodule GTFSRealtimeViz do
       end)
     end)
     |> Enum.map(fn predictions ->
-      Enum.reduce(predictions, %{}, fn {stop_id, time}, acc ->
-        Map.update(acc, stop_id, [timestamp(time, timezone)], fn timestamps -> timestamps ++ [timestamp(time, timezone)] end)
+      Enum.reduce(predictions, %{}, fn {stop_id, {trip_id, time}}, acc ->
+        Map.update(acc, stop_id, [{trip_id, timestamp(time, timezone)}], fn timestamps -> timestamps ++ [{trip_id, timestamp(time, timezone)}] end)
       end)
     end)
   end
@@ -148,7 +148,7 @@ defmodule GTFSRealtimeViz do
     end)
   end
 
-  @spec format_times([String.t] | nil) :: [String.t]
+  @spec format_times([{String.t, DateTime.t}] | nil) :: [Phoenix.HTML.Safe.t]
   def format_times(nil) do
     []
   end
@@ -156,18 +156,58 @@ defmodule GTFSRealtimeViz do
     time_list
     |> Enum.sort()
     |> Enum.take(2)
-    |> Enum.map(& "#{Timex.format!(&1, "{h24}:{m}:{s}")}")
+    |> Enum.map(&format_time/1)
   end
 
-  @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: String.t
+  defp format_time({_, nil}) do
+    nil
+  end
+  defp format_time({trip_id, time}) do
+    ascii = Timex.format!(time, "{h24}:{m}:{s}")
+    span_for_id({ascii, trip_id})
+  end
+
+  @spec format_time_diff(time_list, time_list) :: [{time_output, time_output}]
+  when time_list: {String.t, DateTime.t} | nil, time_output: Phoenix.HTML.Safe.t | nil
+  def format_time_diff(base_list, nil) do
+    for format <- format_times(base_list) do
+      {format, nil}
+    end
+  end
+  def format_time_diff(nil, diff_list) do
+    for format <- format_times(diff_list) do
+      {nil, format}
+    end
+  end
+  def format_time_diff(base_list, diff_list) do
+    base_map = Map.new(base_list)
+    diff_map = Map.new(diff_list)
+    trips = for trip_id <- Map.keys(Map.merge(base_map, diff_map)),
+      base = base_map[trip_id],
+      diff = diff_map[trip_id],
+      is_nil(base) or is_nil(diff) or DateTime.compare(base, diff) != :eq do
+      {format_time({trip_id, base}), format_time({trip_id, diff})}
+    end
+      Enum.take(trips, 2)
+  end
+
+  @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: iodata
   defp trainify(vehicles, status, ascii_train) do
     vehicles
     |> vehicles_with_status(status)
-    |> Enum.map(& "#{ascii_train} (#{&1.vehicle && &1.vehicle.label})")
-    |> Enum.join(",")
+    |> Enum.map(fn status ->
+      label =
+        if status.vehicle do
+          status.vehicle.label || ""
+        else
+          ""
+        end
+      [ascii_train, " ", label]
+    end)
+    |> Enum.intersperse(",")
   end
 
-  @spec trainify_diff([Proto.vehicle_position], [Proto.vehicle_position], Proto.vehicle_position_statuses, String.t, String.t) :: String.t
+  @spec trainify_diff([Proto.vehicle_position], [Proto.vehicle_position], Proto.vehicle_position_statuses, String.t, String.t) :: Phoenix.HTML.Safe.t
   defp trainify_diff(vehicles_base, vehicles_diff, status, ascii_train_base, ascii_train_diff) do
     base = vehicles_with_status(vehicles_base, status) |> Enum.map(& &1.vehicle && &1.vehicle.id)
     diff = vehicles_with_status(vehicles_diff, status) |> Enum.map(& &1.vehicle && &1.vehicle.id)
@@ -178,14 +218,13 @@ defmodule GTFSRealtimeViz do
     [unique_base, unique_diff]
     |> List.flatten()
     |> Enum.map(&span_for_id/1)
-    |> Enum.join(",")
+    |> Enum.intersperse(",")
   end
 
   defp span_for_id({ascii, id}) do
-    tag_opts = [class: "vehicle-#{id}", onmouseover: "highlight(#{id}, 'red')", onmouseout: "highlight(#{id}, 'black')"]
+    tag_opts = [class: "vehicle-#{id}", onmouseover: "highlight('#{id}', 'red')", onmouseout: "highlight('#{id}', 'black')"]
     :span
-    |> Phoenix.HTML.Tag.content_tag("#{ascii} (#{id})", tag_opts)
-    |> Phoenix.HTML.safe_to_string()
+    |> Phoenix.HTML.Tag.content_tag([ascii, "(", id, ")"], tag_opts)
   end
 
   # removes any vehicles that appear in given list
