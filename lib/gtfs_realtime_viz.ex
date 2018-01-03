@@ -195,7 +195,15 @@ defmodule GTFSRealtimeViz do
   defp trainify(vehicles, status, ascii_train) do
     vehicles
     |> vehicles_with_status(status)
-    |> Enum.map(& "#{ascii_train} (#{&1.vehicle && &1.vehicle.label})")
+    |> Enum.map(fn status ->
+      label =
+        if status.vehicle do
+          status.vehicle.label || ""
+        else
+          ""
+        end
+      [ascii_train, " ", label]
+    end)
     |> Enum.intersperse(",")
   end
 
@@ -216,7 +224,7 @@ defmodule GTFSRealtimeViz do
   defp span_for_id({ascii, id}) do
     tag_opts = [class: "vehicle-#{id}", onmouseover: "highlight('#{id}', 'red')", onmouseout: "highlight('#{id}', 'black')"]
     :span
-    |> Phoenix.HTML.Tag.content_tag("#{ascii} (#{id})", tag_opts)
+    |> Phoenix.HTML.Tag.content_tag([ascii, "(", id, ")"], tag_opts)
   end
 
   # removes any vehicles that appear in given list
