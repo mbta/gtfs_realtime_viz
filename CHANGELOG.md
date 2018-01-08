@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.6.0
+
+* Diff visualization hides predictions which are the same in both files.
+* Diff visualization highlights all predictions for a trip on mouseover.
+* Stop IDs that are the same in both directions are correctly distinguished.
+
 ## 0.5.0
 
 * Visualizer can now display predictions alongside the vehicle positions in the ladder view,
