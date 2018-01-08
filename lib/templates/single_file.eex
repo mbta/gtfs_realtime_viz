@@ -21,6 +21,8 @@
         </tr>
 
         <%= for {stop_name, stop_id_0, stop_id_1} <- stops do %>
+          <% stop_id_0 = {stop_id_0, 0} %>
+          <% stop_id_1 = {stop_id_1, 1} %>
           <% vs0 = vehicles_by_stop[stop_id_0] || [] %>
           <% vs1 = vehicles_by_stop[stop_id_1] || [] %>
           <tr>
@@ -99,4 +101,3 @@
 
   </div>
 <% end %>
-

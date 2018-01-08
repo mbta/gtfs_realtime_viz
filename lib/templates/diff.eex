@@ -21,6 +21,8 @@
         </tr>
 
         <%= for {stop_name, stop_id_0, stop_id_1} <- stops do %>
+          <% stop_id_0 = {stop_id_0, 0} %>
+          <% stop_id_1 = {stop_id_1, 1} %>
           <% vs0_base = by_stop_base[stop_id_0] || [] %>
           <% vs1_base = by_stop_base[stop_id_1] || [] %>
           <% base_trips_0 = trip_update_base[stop_id_0] || [] %>
