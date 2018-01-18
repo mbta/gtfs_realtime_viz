@@ -645,4 +645,12 @@ defmodule GTFSRealtimeVizTest do
       assert GTFSRealtimeViz.trips_we_care_about(state, routes_we_care_about) == expected
     end
   end
+
+  describe "sort_by_time/1" do
+    test "sorts the time list by time" do
+      time_list = [{"12345", ~D[2018-01-03]}, {"12345", ~D[2018-01-02]}, {"11111", ~D[2018-01-01]}, {"11112", ~D[2018-01-05]}]
+      result = GTFSRealtimeViz.sort_by_time(time_list)
+      assert List.first(result) == {"11111", ~D[2018-01-01]}
+    end
+  end
 end
