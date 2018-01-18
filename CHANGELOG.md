@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.6.1
+* Fixes a bug where trips were sorted by trip_id instead of by vehicle arrival time
+
 ## 0.6.0
 
 * Diff visualization hides predictions which are the same in both files.
