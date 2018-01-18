@@ -154,9 +154,17 @@ defmodule GTFSRealtimeViz do
   end
   def format_times(time_list) do
     time_list
-    |> Enum.sort()
+    |> sort_by_time()
     |> Enum.take(2)
     |> Enum.map(&format_time/1)
+  end
+
+  def sort_by_time(time_list) do
+    Enum.sort(time_list, &time_list_sorter/2)
+  end
+
+  defp time_list_sorter({_, time1}, {_, time2}) do
+    Timex.before?(time1, time2)
   end
 
   defp format_time({_, nil}) do
