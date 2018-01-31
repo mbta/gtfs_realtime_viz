@@ -188,16 +188,23 @@ defmodule GTFSRealtimeViz do
     end
   end
   def format_time_diff(base_list, diff_list) do
-    base_map = Map.new(base_list)
-    diff_map = Map.new(diff_list)
-    trips = for trip_id <- Map.keys(Map.merge(base_map, diff_map)),
-      base = base_map[trip_id],
-      diff = diff_map[trip_id],
-      is_nil(base) or is_nil(diff) or DateTime.compare(base, diff) != :eq do
-      {format_time({trip_id, base}), format_time({trip_id, diff})}
+    formatted_predictions = for {{base_trip, base_prediction}, {diff_trip, diff_prediction}} <- sort_time_diff(base_list, diff_list) do
+      {format_time({base_trip, base_prediction}), format_time({diff_trip, diff_prediction})}
     end
-    Enum.take(trips, 2)
   end
+
+  def sort_time_diff(base_list, diff_list) do
+    for {base, diff} <- zip_pad(sort_by_time(base_list), sort_by_time(diff_list), 2, [])  do
+      {base, diff}
+    end
+  end
+
+  defp zip_pad(base_list, diff_list, count, acc)
+  defp zip_pad([], [], _, acc), do: Enum.reverse(acc)
+  defp zip_pad(_, _, 0, acc), do: Enum.reverse(acc)
+  defp zip_pad([], [head | tail], count, acc), do: zip_pad([], tail, count - 1, [{nil, head} | acc])
+  defp zip_pad([head | tail], [], count, acc), do: zip_pad(tail, [], count - 1, [{head, nil} | acc])
+  defp zip_pad([base_head | base_tail], [diff_head | diff_tail], count, acc), do: zip_pad(base_tail, diff_tail, count - 1, [{base_head, diff_head} | acc])
 
   @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: iodata
   defp trainify(vehicles, status, ascii_train) do
