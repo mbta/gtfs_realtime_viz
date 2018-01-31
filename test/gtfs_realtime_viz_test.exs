@@ -653,4 +653,22 @@ defmodule GTFSRealtimeVizTest do
       assert List.first(result) == {"11111", ~D[2018-01-01]}
     end
   end
+
+  describe "sort_time_diff/2" do
+    test "sorts all predictions by time" do
+      base_list = [{"12345", ~D[2018-01-03]}, {"12345", ~D[2018-01-02]}, {"11111", ~D[2018-01-01]}, {"11112", ~D[2018-01-05]}]
+      diff_list = [{"54321", ~D[2018-02-03]}, {"15243", ~D[2018-02-02]}, {"22222", ~D[2018-02-01]}, {"21111", ~D[2018-02-05]}]
+
+      result = GTFSRealtimeViz.sort_time_diff(base_list, diff_list)
+      assert List.first(result) == {{"11111", ~D[2018-01-01]}, {"22222", ~D[2018-02-01]}}
+    end
+
+    test "always gives two results per environment if it has two or more" do
+      base_list = [{"12345", ~D[2018-01-03]}, {"12345", ~D[2018-01-02]}, {"11111", ~D[2018-01-01]}, {"11112", ~D[2018-01-05]}]
+      diff_list = [{"54321", ~D[2018-02-03]}]
+
+      result = GTFSRealtimeViz.sort_time_diff(base_list, diff_list)
+      assert result == [{{"11111", ~D[2018-01-01]}, {"54321", ~D[2018-02-03]}}, {{"12345", ~D[2018-01-02]}, nil}]
+    end
+  end
 end
