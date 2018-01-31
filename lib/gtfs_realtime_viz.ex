@@ -191,28 +191,20 @@ defmodule GTFSRealtimeViz do
     formatted_predictions = for {{base_trip, base_prediction}, {diff_trip, diff_prediction}} <- sort_time_diff(base_list, diff_list) do
       {format_time({base_trip, base_prediction}), format_time({diff_trip, diff_prediction})}
     end
-    Enum.take(formatted_predictions, 2)
   end
 
   def sort_time_diff(base_list, diff_list) do
-    predictions = for {base, diff} <- zip_pad(sort_by_time(base_list), sort_by_time(diff_list), [])  do
+    for {base, diff} <- zip_pad(sort_by_time(base_list), sort_by_time(diff_list), 2, [])  do
       {base, diff}
     end
-    Enum.take(predictions, 2)
   end
 
-  defp zip_pad([], [], zipped) do
-    Enum.reverse(zipped)
-  end
-  defp zip_pad([base_head | base_tail], [], zipped) do
-    zip_pad(base_tail, [], [{base_head, nil} | zipped])
-  end
-  defp zip_pad([], [diff_head | diff_tail], zipped) do
-    zip_pad([], diff_tail, [{nil, diff_head} | zipped])
-  end
-  defp zip_pad([base_head | base_tail], [diff_head | diff_tail], zipped) do
-    zip_pad(base_tail, diff_tail, [{base_head, diff_head} | zipped])
-  end
+  defp zip_pad(base_list, diff_list, count, acc)
+  defp zip_pad([], [], _, acc), do: Enum.reverse(acc)
+  defp zip_pad(_, _, 0, acc), do: Enum.reverse(acc)
+  defp zip_pad([], [head | tail], count, acc), do: zip_pad([], tail, count - 1, [{nil, head} | acc])
+  defp zip_pad([head | tail], [], count, acc), do: zip_pad(tail, [], count - 1, [{head, nil} | acc])
+  defp zip_pad([base_head | base_tail], [diff_head | diff_tail], count, acc), do: zip_pad(base_tail, diff_tail, count - 1, [{base_head, diff_head} | acc])
 
   @spec trainify([Proto.vehicle_position], Proto.vehicle_position_statuses, String.t) :: iodata
   defp trainify(vehicles, status, ascii_train) do
