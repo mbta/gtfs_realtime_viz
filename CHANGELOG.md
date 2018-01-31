@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.2
+* Removes the dependency on trip id being the same between diffed environments so
+  that earlier trips will correctly be shown even when trip ids do not match
+
 ## 0.6.1
 * Fixes a bug where trips were sorted by trip_id instead of by vehicle arrival time
 
