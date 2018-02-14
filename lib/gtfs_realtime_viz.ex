@@ -223,10 +223,7 @@ defmodule GTFSRealtimeViz do
   end
 
   @spec label_or_id(Proto.vehicle_position) :: String.t
-  defp label_or_id(%{label: nil, id: id}) do
-    id
-  end
-  defp label_or_id(%{label: "", id: id}) do
+  defp label_or_id(%{label: label, id: id}) when label in [nil, ""] do
     id
   end
   defp label_or_id(%{label: label}) do
