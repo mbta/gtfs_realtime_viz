@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.6.3
+* Uses vehicle label rather than ID in the diff view
+* If a route has no stops configured, hide it from the ladder view
+
 ## 0.6.2
 * Removes the dependency on trip id being the same between diffed environments so
   that earlier trips will correctly be shown even when trip ids do not match
