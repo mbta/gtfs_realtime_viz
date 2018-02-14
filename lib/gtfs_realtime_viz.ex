@@ -222,10 +222,17 @@ defmodule GTFSRealtimeViz do
     |> Enum.intersperse(",")
   end
 
+  defp label_or_id(vehicle) do
+    case vehicle.label do
+      "" -> vehicle.id
+      label -> label
+    end
+  end
+
   @spec trainify_diff([Proto.vehicle_position], [Proto.vehicle_position], Proto.vehicle_position_statuses, String.t, String.t) :: Phoenix.HTML.Safe.t
   defp trainify_diff(vehicles_base, vehicles_diff, status, ascii_train_base, ascii_train_diff) do
-    base = vehicles_with_status(vehicles_base, status) |> Enum.map(& &1.vehicle && &1.vehicle.label)
-    diff = vehicles_with_status(vehicles_diff, status) |> Enum.map(& &1.vehicle && &1.vehicle.label)
+    base = vehicles_with_status(vehicles_base, status) |> Enum.map(& &1.vehicle && label_or_id(&1.vehicle))
+    diff = vehicles_with_status(vehicles_diff, status) |> Enum.map(& &1.vehicle && label_or_id(&1.vehicle))
 
     unique_base = unique_trains(base, diff, ascii_train_base)
     unique_diff = unique_trains(diff, base, ascii_train_diff)
