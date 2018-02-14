@@ -188,7 +188,7 @@ defmodule GTFSRealtimeViz do
     end
   end
   def format_time_diff(base_list, diff_list) do
-    formatted_predictions = for {{base_trip, base_prediction}, {diff_trip, diff_prediction}} <- sort_time_diff(base_list, diff_list) do
+    for {{base_trip, base_prediction}, {diff_trip, diff_prediction}} <- sort_time_diff(base_list, diff_list) do
       {format_time({base_trip, base_prediction}), format_time({diff_trip, diff_prediction})}
     end
   end
