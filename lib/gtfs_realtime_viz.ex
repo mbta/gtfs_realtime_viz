@@ -222,11 +222,15 @@ defmodule GTFSRealtimeViz do
     |> Enum.intersperse(",")
   end
 
-  defp label_or_id(vehicle) do
-    case vehicle.label do
-      "" -> vehicle.id
-      label -> label
-    end
+  @spec label_or_id(Proto.vehicle_position) :: String.t
+  defp label_or_id(%{label: nil, id: id}) do
+    id
+  end
+  defp label_or_id(%{label: "", id: id}) do
+    id
+  end
+  defp label_or_id(%{label: label}) do
+    label
   end
 
   @spec trainify_diff([Proto.vehicle_position], [Proto.vehicle_position], Proto.vehicle_position_statuses, String.t, String.t) :: Phoenix.HTML.Safe.t
