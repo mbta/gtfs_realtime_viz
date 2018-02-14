@@ -345,8 +345,9 @@ defmodule GTFSRealtimeVizTest do
       GTFSRealtimeViz.new_message(:test_base, base_raw, "this is the base data")
       GTFSRealtimeViz.new_message(:test_diff, diff_raw, "this is the diff data")
       viz = GTFSRealtimeViz.visualize_diff(:test_base, :test_diff, opts)
+      File.write!("test_output.html", viz)
 
-      assert viz =~ "this_is_the_vehicle_id"
+      assert viz =~ "this_is_the_vehicle_label"
     end
 
     test "shows predictions if we have them" do
