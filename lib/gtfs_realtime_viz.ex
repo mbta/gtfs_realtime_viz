@@ -47,7 +47,7 @@ defmodule GTFSRealtimeViz do
   @spec visualize(term, route_opts) :: String.t
   def visualize(group, opts) do
     routes = Map.keys(opts[:routes])
-    display_routes = opts[:routes] |> Enum.reject(fn {key, val} -> val == [] end) |> Map.new
+    display_routes = opts[:routes] |> Enum.reject(fn {_key, val} -> val == [] end) |> Map.new
     vehicle_archive = get_vehicle_archive(group, routes)
     trip_update_archive = get_trip_update_archive(group, routes, opts[:timezone])
     [trip_update_archive: trip_update_archive, vehicle_archive: vehicle_archive, routes: display_routes, render_diff?: false]
