@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.7.1
+* If we don't provide routes to filter, we don't filter anything
+
 ## 0.7.0
 * Uses vehicle label rather than ID in the diff view
 * If a route has no stops configured, hide it from the ladder view
