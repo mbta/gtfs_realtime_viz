@@ -96,8 +96,10 @@ defmodule GTFSRealtimeViz do
       |> Enum.flat_map(fn trip_update ->
         trip_update.stop_time_update
         |> Enum.reduce(%{}, fn stop_update, stop_update_acc ->
-          if stop_update.arrival && stop_update.arrival.time do
-            Map.put(stop_update_acc, {stop_update.stop_id, trip_update.trip.direction_id}, {trip_update.trip.trip_id, stop_update.arrival.time})
+          arrival_time = stop_update.arrival && stop_update.arrival.time
+          departure_time = stop_update.departure && stop_update.departure.time
+          if arrival_time || departure_time do
+            Map.put(stop_update_acc, {stop_update.stop_id, trip_update.trip.direction_id}, {trip_update.trip.trip_id, {arrival_time, departure_time}})
           else
             stop_update_acc
           end
@@ -105,17 +107,24 @@ defmodule GTFSRealtimeViz do
       end)
     end)
     |> Enum.map(fn predictions ->
-      Enum.reduce(predictions, %{}, fn {stop_id, {trip_id, time}}, acc ->
-        Map.update(acc, stop_id, [{trip_id, timestamp(time, timezone)}], fn timestamps -> timestamps ++ [{trip_id, timestamp(time, timezone)}] end)
+      Enum.reduce(predictions, %{}, fn {stop_id, {trip_id, times}}, acc ->
+        Map.update(acc, stop_id, [{trip_id, timestamp(times, timezone)}], fn timestamps -> timestamps ++ [{trip_id, timestamp(times, timezone)}] end)
       end)
     end)
   end
 
-  defp timestamp(diff_time, timezone) do
-    diff_datetime = diff_time
-                    |> DateTime.from_unix!()
-                    |> Timex.Timezone.convert(timezone)
-    diff_datetime
+  defp timestamp({arrival_diff_time, departure_diff_time}, timezone) do
+    arrival_diff_datetime = if arrival_diff_time do
+      arrival_diff_time
+      |> DateTime.from_unix!()
+      |> Timex.Timezone.convert(timezone)
+    end
+    departure_diff_datetime = if departure_diff_time do
+      departure_diff_time
+      |> DateTime.from_unix!()
+      |> Timex.Timezone.convert(timezone)
+    end
+    {arrival_diff_datetime, departure_diff_datetime}
   end
 
   defp get_vehicle_archive(group, routes) do
@@ -152,7 +161,7 @@ defmodule GTFSRealtimeViz do
     end)
   end
 
-  @spec format_times([{String.t, DateTime.t}] | nil) :: [Phoenix.HTML.Safe.t]
+  @spec format_times([{String.t, {DateTime.t, DateTime.t}}] | nil) :: [Phoenix.HTML.Safe.t]
   def format_times(nil) do
     []
   end
@@ -167,15 +176,35 @@ defmodule GTFSRealtimeViz do
     Enum.sort(time_list, &time_list_sorter/2)
   end
 
-  defp time_list_sorter({_, time1}, {_, time2}) do
+  defp time_list_sorter({_, {arr_time1, dep_time1}}, {_, {arr_time2, dep_time2}}) do
+    time1 = arr_time1 || dep_time1
+    time2 = arr_time2 || dep_time2
     Timex.before?(time1, time2)
   end
 
   defp format_time({_, nil}) do
     nil
   end
-  defp format_time({trip_id, time}) do
-    ascii = Timex.format!(time, "{h24}:{m}:{s}")
+  defp format_time({trip_id, {arr_time, dep_time}}) do
+    now = Timex.now
+
+    ascii_arr = if arr_time do
+      diff = Float.round(Timex.diff(arr_time, now, :seconds) / 60, 1)
+      Timex.format!(arr_time, "{h24}:{m}:{s} [#{diff} m]")
+    end
+
+    ascii_dep = if dep_time do
+      diff = Float.round(Timex.diff(dep_time, now, :seconds) / 60, 1)
+      Timex.format!(dep_time, "{h24}:{m}:{s} [#{diff} m]")
+    end
+
+    ascii = cond do
+      ascii_arr == ascii_dep -> "Arr/Dep. #{ascii_arr}"
+      ascii_arr && ascii_dep -> "Arr. #{ascii_arr}, Dep. #{ascii_dep}"
+      ascii_arr -> "Arr. #{ascii_arr}"
+      ascii_dep -> "Dep. #{ascii_dep}"
+    end
+
     span_for_id({ascii, trip_id})
   end
 
@@ -251,7 +280,7 @@ defmodule GTFSRealtimeViz do
   defp span_for_id({ascii, id}) do
     tag_opts = [class: "vehicle-#{id}", onmouseover: "highlight('#{id}', 'red')", onmouseout: "highlight('#{id}', 'black')"]
     :span
-    |> Phoenix.HTML.Tag.content_tag([ascii, "(", id, ")"], tag_opts)
+    |> Phoenix.HTML.Tag.content_tag([ascii, " (", id, ")"], tag_opts)
   end
 
   # removes any vehicles that appear in given list

@@ -9,15 +9,11 @@
       <h3><%= route_name %></h3>
       <table class="viz-ladder">
         <tr>
-          <th class="viz-position">Next Train Arrives at:</th>
-          <th class="viz-position">Transit
-          <th class="viz-position">Incoming</th>
-          <th class="viz-position">At</th>
+          <th>Trips</th>
+          <th class="viz-position viz-position-header">Position</th>
           <th>Station</th>
-          <th class="viz-position">At</th>
-          <th class="viz-position">Incoming</th>
-          <th class="viz-position">Transit</th>
-          <th class="viz-position">Next Train Arrives at:</th>
+          <th class="viz-position viz-position-header">Position</th>
+          <th>Trips</th>
         </tr>
 
         <%= for {stop_name, stop_id_0, stop_id_1} <- stops do %>
@@ -33,8 +29,6 @@
           <% diff_trips_0 = trip_update_diff[stop_id_0] || [] %>
           <% diff_trips_1 = trip_update_diff[stop_id_1] || [] %>
 
-
-
           <tr>
             <td>
               <%= for {base_prediction, diff_prediction} <- format_time_diff(base_trips_0, diff_trips_0) do %>
@@ -47,25 +41,35 @@
               <% end %>
             </td>
             <td>
-              <%= trainify_diff(vs0_base, vs0_diff, :IN_TRANSIT_TO, "🚂", "👻")%>
+              <div class="viz-position">
+                <div class="viz-position-train viz-align-right"><%= trainify_diff(vs0_base, vs0_diff, :IN_TRANSIT_TO, "🚂", "👻") %></div>
+                <div class="viz-position-label viz-align-left">↓ In Transit</div>
+              </div>
+              <div class="viz-position">
+                <div class="viz-position-train viz-align-right"><%= trainify_diff(vs0_base, vs0_diff, :INCOMING_AT, "🚂", "👻") %></div>
+                <div class="viz-position-label viz-align-left">↓ Incoming</div>
+              </div>
+              <div class="viz-position">
+                <div class="viz-position-train viz-align-right"><%= trainify_diff(vs0_base, vs0_diff, :STOPPED_AT, "🚂", "👻") %></div>
+                <div class="viz-position-label viz-align-left">↓ Stopped At</div>
+              </div>
             </td>
             <td>
-              <%= trainify_diff(vs0_base, vs0_diff, :INCOMING_AT, "🚂", "👻")%>
+              <em><%= stop_name %></em>
             </td>
             <td>
-              <%= trainify_diff(vs0_base, vs0_diff, :STOPPED_AT, "🚂", "👻")%>
-            </td>
-            <td>
-              <%= stop_name %>
-            </td>
-            <td>
-              <%= trainify_diff(vs1_base, vs1_diff, :STOPPED_AT, "🚂", "👻")%>
-            </td>
-            <td>
-              <%= trainify_diff(vs1_base, vs1_diff, :INCOMING_AT, "🚂", "👻")%>
-            </td>
-            <td>
-              <%= trainify_diff(vs1_base, vs1_diff, :IN_TRANSIT_TO, "🚂", "👻")%>
+              <div class="viz-position">
+                <div class="viz-position-label viz-align-right">Stopped At ↑</div>
+                <div class="viz-position-train viz-align-left"><%= trainify_diff(vs1_base, vs1_diff, :STOPPED_AT, "🚂", "👻") %></div>
+              </div>
+              <div class="viz-position">
+                <div class="viz-position-label viz-align-right">Incoming ↑</div>
+                <div class="viz-position-train viz-align-left"><%= trainify_diff(vs1_base, vs1_diff, :INCOMING_AT, "🚂", "👻") %></div>
+              </div>
+              <div class="viz-position">
+                <div class="viz-position-label viz-align-right">In Transit ↑</div>
+                <div class="viz-position-train viz-align-left"><%= trainify_diff(vs1_base, vs1_diff, :IN_TRANSIT_TO, "🚂", "👻") %></div>
+              </div>
             </td>
             <td>
               <%= for {base_prediction, diff_prediction} <- format_time_diff(base_trips_1, diff_trips_1) do %>
