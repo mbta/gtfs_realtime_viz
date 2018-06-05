@@ -26,6 +26,31 @@
   .viz-tool.viz-hidden {
     display: none;
   }
+  .viz-tool .viz-position {
+    width: 240px;
+  }
+  .viz-tool .viz-position-label {
+    display: inline-block;
+    width: 100px;
+  }
+  .viz-tool .viz-position-train {
+    display: inline-block;
+    width: 100px;
+    margin-left: 10px;
+    margin-right: 10px;
+  }
+  .viz-tool .viz-align-left {
+    text-align: left;
+  }
+  .viz-tool .viz-align-right {
+    text-align: right;
+  }
+  .viz-tool .viz-position-header {
+    text-align: center;
+  }
+  .viz-tool .viz-prediction {
+   width: 260px;
+  }
 </style>
 
 <button id="viz-tool-previous-button">Previous</button>
