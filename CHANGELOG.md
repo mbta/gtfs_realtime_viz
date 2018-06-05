@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.8.0
+* Changes in visualization:
+  * Include whether times are for arrival or departure
+  * Include "minutes away" calculation
+  * Re-arrange table to have transit->incoming->stopped go vertical
+
 ## 0.7.1
 * If we don't provide routes to filter, we don't filter anything
 
