@@ -168,7 +168,7 @@ defmodule GTFSRealtimeViz do
   def format_times(time_list) do
     time_list
     |> sort_by_time()
-    |> Enum.take(2)
+    |> Enum.take(3)
     |> Enum.map(&format_time/1)
   end
 

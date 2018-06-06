@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.9.0
+ * Change in  visualization:
+  * Show next three predictions, rather than 2.
+
 ## 0.8.0
 * Changes in visualization:
   * Include whether times are for arrival or departure
