@@ -4,6 +4,82 @@ defmodule GTFSRealtimeVizTest do
   alias GTFSRealtimeViz.Proto
   alias Test.DataHelpers
 
+  test "when all vehicles have stop ids, does not have a no stop id section" do
+    data = %Proto.FeedMessage{
+      header: %Proto.FeedHeader{
+        gtfs_realtime_version: "1.0",
+      },
+      entity: [
+        %Proto.FeedEntity{
+          id: "123",
+          is_deleted: false,
+          vehicle: %Proto.VehiclePosition{
+            trip: %Proto.TripDescriptor{
+              trip_id: "this_is_the_trip_id",
+              route_id: "route",
+              direction_id: 0,
+            },
+            vehicle: %Proto.VehicleDescriptor{
+              id: "this_is_the_vehicle_id",
+              label: "this_is_the_vehicle_label",
+            },
+            position: %Proto.Position{
+              latitude: 0.00,
+              longitude: 0.00,
+            },
+            stop_id: "this_is_the_stop_id",
+          }
+        }
+      ]
+    }
+
+    raw = Proto.FeedMessage.encode(data)
+
+    GTFSRealtimeViz.new_message(:test, raw, "this is the test data")
+    viz = GTFSRealtimeViz.visualize(:test, %{routes: %{"route" => [{"stop", "this_is_the_stop_id", "outbound"}]}})
+
+    refute viz =~ "No Stop ID:"
+    assert viz =~ "this_is_the_vehicle_id"
+  end
+
+  test "when the prediction does not have a stop id, puts the vehicle in a separate location" do
+    data = %Proto.FeedMessage{
+      header: %Proto.FeedHeader{
+        gtfs_realtime_version: "1.0",
+      },
+      entity: [
+        %Proto.FeedEntity{
+          id: "123",
+          is_deleted: false,
+          vehicle: %Proto.VehiclePosition{
+            trip: %Proto.TripDescriptor{
+              trip_id: "this_is_the_trip_id",
+              route_id: "route",
+              direction_id: 0,
+            },
+            vehicle: %Proto.VehicleDescriptor{
+              id: "this_is_the_vehicle_id",
+              label: "this_is_the_vehicle_label",
+            },
+            position: %Proto.Position{
+              latitude: 0.00,
+              longitude: 0.00,
+            },
+            stop_id: nil,
+          }
+        }
+      ]
+    }
+
+    raw = Proto.FeedMessage.encode(data)
+
+    GTFSRealtimeViz.new_message(:nil_test, raw, "this is the test data")
+    viz = GTFSRealtimeViz.visualize(:nil_test, %{routes: %{"route" => [{"stop", "this_is_the_stop_id", "outbound"}]}})
+
+    assert viz =~ "No Stop ID:"
+    assert viz =~ "this_is_the_vehicle_id"
+  end
+
   test "visualizes a file" do
     data = %Proto.FeedMessage{
       header: %Proto.FeedHeader{

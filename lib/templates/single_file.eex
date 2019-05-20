@@ -4,6 +4,25 @@
     <div class="viz-comment"><%= comment %></div>
 
     <h2>Routes</h2>
+    <% nil_stops_0 = {nil, 0} %>
+    <% nil_stops_1 = {nil, 1} %>
+    <% ns0 = vehicles_by_stop[nil_stops_0] || [] %>
+    <% ns1 = vehicles_by_stop[nil_stops_1] || [] %>
+    <%= if ns0 != [] or ns1 != [] do %>
+      <table>
+        No Stop ID:
+        <%= for ns <- ns0 do %>
+          <tr>
+            <%= ns.vehicle.id %>
+          </tr>
+        <% end %>
+        <%= for ns <- ns1 do %>
+          <tr>
+            <%= ns.vehicle.id %>
+          </tr>
+        <% end %>
+      </table>
+    <% end %>
 
     <%= for {route_name, stops} <- @routes do %>
       <h3><%= route_name %></h3>
