@@ -8,6 +8,7 @@
     <% nil_stops_1 = {nil, 1} %>
     <% ns0 = vehicles_by_stop[nil_stops_0] || [] %>
     <% ns1 = vehicles_by_stop[nil_stops_1] || [] %>
+    <% Map.delete(vehicles_by_stop, nil) %>
     <%= if ns0 != [] or ns1 != [] do %>
       <table>
         No Stop ID:
