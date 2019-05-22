@@ -50,9 +50,8 @@ defmodule GTFSRealtimeViz.Mixfile do
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/mbta/gtfs_realtime_viz"},
       maintainers: [
-        "Gabe Durazo <gabe@durazo.us>",
-        "Alex Sghia-Hughes",
-        "Dave Maltzan <dmaltzan@gmail.com>"
+        "Gabe Durazo <gdurazo@mbta.com>",
+        "Alex Sghia-Hughes"
       ]
     ]
   end
