@@ -1,14 +1,14 @@
 defmodule GTFSRealtimeViz.Mixfile do
   use Mix.Project
 
-  @version "0.9.0"
+  @version "0.10.0"
 
   def project do
     [
       app: :gtfs_realtime_viz,
       version: @version,
       elixir: "~> 1.0",
-      start_permanent: Mix.env == :prod,
+      start_permanent: Mix.env() == :prod,
       deps: deps(),
       package: package(),
       description: description(),
@@ -20,7 +20,7 @@ defmodule GTFSRealtimeViz.Mixfile do
     [
       extra_applications: [:logger],
       mod: {GTFSRealtimeViz.Application, []},
-      env: env(),
+      env: env()
     ]
   end
 
@@ -37,7 +37,7 @@ defmodule GTFSRealtimeViz.Mixfile do
   defp env do
     [
       max_archive: 5,
-      routes: %{},
+      routes: %{}
     ]
   end
 
@@ -49,7 +49,11 @@ defmodule GTFSRealtimeViz.Mixfile do
     [
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/mbta/gtfs_realtime_viz"},
-      maintainers: ["Gabe Durazo <gabe@durazo.us>", "John Kohler <kohlerjohnp@gmail.com>", "Alex Sghia-Hughes", "Dave Maltzan <dmaltzan@gmail.com>"]
+      maintainers: [
+        "Gabe Durazo <gabe@durazo.us>",
+        "Alex Sghia-Hughes",
+        "Dave Maltzan <dmaltzan@gmail.com>"
+      ]
     ]
   end
 end

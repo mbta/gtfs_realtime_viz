@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.10.0
+ * Change in visualization:
+   * Do not put trains that have no stop id in the route ladders.
+   * Show the vehicle ids of trains with no stop id at the top of the page.
+
 ## 0.9.0
  * Change in  visualization:
   * Show next three predictions, rather than 2.
