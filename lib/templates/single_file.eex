@@ -8,7 +8,8 @@
     <% nil_stops_1 = {nil, 1} %>
     <% ns0 = vehicles_by_stop[nil_stops_0] || [] %>
     <% ns1 = vehicles_by_stop[nil_stops_1] || [] %>
-    <% Map.delete(vehicles_by_stop, nil) %>
+    <% non_nil_vehicles = Map.delete(vehicles_by_stop, nil_stops_0) %>
+    <% non_nil_vehicles = Map.delete(non_nil_vehicles, nil_stops_1) %>
     <%= if ns0 != [] or ns1 != [] do %>
       <table>
         No Stop ID:
@@ -39,8 +40,8 @@
         <%= for {stop_name, stop_id_0, stop_id_1} <- stops do %>
           <% stop_id_0 = {stop_id_0, 0} %>
           <% stop_id_1 = {stop_id_1, 1} %>
-          <% vs0 = vehicles_by_stop[stop_id_0] || [] %>
-          <% vs1 = vehicles_by_stop[stop_id_1] || [] %>
+          <% vs0 = non_nil_vehicles[stop_id_0] || [] %>
+          <% vs1 = non_nil_vehicles[stop_id_1] || [] %>
           <tr>
             <td>
               <%= for prediction <- format_times(trip_updates[stop_id_0]) do %>
