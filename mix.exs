@@ -28,7 +28,7 @@ defmodule GTFSRealtimeViz.Mixfile do
     [
       {:dialyxir, "~> 0.0", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.16", only: [:dev, :test], runtime: false},
-      {:exprotobuf, "~> 1.0"},
+      {:protox, "~> 2.0"},
       {:phoenix_html, "~> 2.0"},
       {:timex, "~> 3.1"}
     ]
