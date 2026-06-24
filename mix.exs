@@ -1,7 +1,7 @@
 defmodule GTFSRealtimeViz.Mixfile do
   use Mix.Project
 
-  @version "0.10.0"
+  @version "0.11.0"
 
   def project do
     [
@@ -50,8 +50,7 @@ defmodule GTFSRealtimeViz.Mixfile do
       licenses: ["MIT"],
       links: %{"GitHub" => "https://github.com/mbta/gtfs_realtime_viz"},
       maintainers: [
-        "Gabe Durazo <gdurazo@mbta.com>",
-        "Alex Sghia-Hughes"
+        "Eddie Maldonado <emaldonado@mbta.com>"
       ]
     ]
   end

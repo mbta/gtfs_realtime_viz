@@ -1,5 +1,8 @@
 # Changelog
 
+## 0.11.0
+ * Update dependencies
+
 ## 0.10.0
  * Change in visualization:
    * Do not put trains that have no stop id in the route ladders.
