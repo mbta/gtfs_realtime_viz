@@ -407,7 +407,6 @@ defmodule GTFSRealtimeVizTest do
       )
 
       viz = GTFSRealtimeViz.visualize_diff(:test_bucket_base_1, :test_bucket_diff_1, opts)
-      File.write!("output.html", viz)
 
       refute viz =~ "this_is_the_vehicle_id"
     end
@@ -497,7 +496,6 @@ defmodule GTFSRealtimeVizTest do
       )
 
       viz = GTFSRealtimeViz.visualize_diff(:test_base, :test_diff, opts)
-      File.write!("test_output.html", viz)
 
       assert viz =~ "this_is_the_vehicle_label"
     end
