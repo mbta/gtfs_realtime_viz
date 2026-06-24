@@ -21,9 +21,11 @@ defmodule GTFSRealtimeViz.StateTest do
 
     test "respects max_archive and :infinity", %{state_pid: pid} do
       old_max_archive = Application.get_env(:gtfs_realtime_viz, :max_archive)
-      on_exit fn ->
+
+      on_exit(fn ->
         Application.put_env(:gtfs_realtime_viz, :max_archive, old_max_archive)
-      end
+      end)
+
       msg = Test.DataHelpers.proto_for_vehicle_ids(["veh_id"])
 
       Application.put_env(:gtfs_realtime_viz, :max_archive, 1)
@@ -44,8 +46,11 @@ defmodule GTFSRealtimeViz.StateTest do
       raw2 = Test.DataHelpers.feedmessage_encode_trip_update("trip_id")
       State.new_data(pid, :test3, raw1, raw2, "1st msg")
 
-      assert [{"1st msg", [%GTFSRealtimeViz.Proto.VehiclePosition{}]}] = State.vehicles(pid, :test3)
-      assert [{"1st msg", [%GTFSRealtimeViz.Proto.TripUpdate{}]}] = State.trip_updates(pid, :test3)
+      assert [{"1st msg", [%GTFSRealtimeViz.Proto.VehiclePosition{}]}] =
+               State.vehicles(pid, :test3)
+
+      assert [{"1st msg", [%GTFSRealtimeViz.Proto.TripUpdate{}]}] =
+               State.trip_updates(pid, :test3)
     end
   end
 end
