@@ -5,7 +5,10 @@ defmodule GTFSRealtimeViz.State do
 
   alias GTFSRealtimeViz.Proto
 
-  @type state :: %{vehicles: %{optional(term) => [{String.t, [Proto.vehicle_position]}]}, trip_updates: %{optional(term) => [{String.t, [Proto.vehicle_position]}]}}
+  @type state :: %{
+          vehicles: %{optional(term) => [{String.t(), [Proto.vehicle_position()]}]},
+          trip_updates: %{optional(term) => [{String.t(), [Proto.vehicle_position()]}]}
+        }
 
   def start_link(opts \\ []) do
     name = Keyword.get(opts, :name, __MODULE__)
@@ -19,74 +22,81 @@ defmodule GTFSRealtimeViz.State do
 
   # client interface
 
-  @spec single_pb(GenServer.server, term, Proto.raw, String.t) :: :ok
+  @spec single_pb(GenServer.server(), term, Proto.raw(), String.t()) :: :ok
   def single_pb(pid \\ __MODULE__, group, raw, comment) do
     data =
       raw
-      |> Proto.FeedMessage.decode
+      |> Proto.FeedMessage.decode!()
       |> Map.get(:entity)
 
-    vehicles = Enum.map(data, & &1.vehicle) |> Enum.reject(& &1 == nil)
-    trip_updates = Enum.map(data, & &1.trip_update) |> Enum.reject(& &1 == nil)
+    vehicles = Enum.map(data, & &1.vehicle) |> Enum.reject(&(&1 == nil))
+    trip_updates = Enum.map(data, & &1.trip_update) |> Enum.reject(&(&1 == nil))
 
     if !Enum.empty?(vehicles) do
       new_data(pid, group, raw, nil, comment)
     end
+
     if !Enum.empty?(trip_updates) do
       new_data(pid, group, nil, raw, comment)
     end
   end
 
-  @spec new_data(GenServer.server, term, Proto.raw, Proto.raw, String.t) :: :ok
+  @spec new_data(GenServer.server(), term, Proto.raw(), Proto.raw(), String.t()) :: :ok
   def new_data(pid \\ __MODULE__, group, vehicle_positions, trip_updates, comment)
+
   def new_data(pid, group, vehicle_positions, nil, comment) do
     raw_vp =
       vehicle_positions
-      |> Proto.FeedMessage.decode
+      |> Proto.FeedMessage.decode!()
       |> Map.get(:entity)
 
-    vehicles = Enum.map(raw_vp, & &1.vehicle) |> Enum.reject(& &1 == nil)
+    vehicles = Enum.map(raw_vp, & &1.vehicle) |> Enum.reject(&(&1 == nil))
     GenServer.call(pid, {:vehicles_and_trip_updates, group, vehicles, [], comment})
   end
+
   def new_data(pid, group, nil, trip_updates, comment) do
     raw_tu =
       trip_updates
-      |> Proto.FeedMessage.decode
+      |> Proto.FeedMessage.decode!()
       |> Map.get(:entity)
 
-    trip_updates = Enum.map(raw_tu, & &1.trip_update) |> Enum.reject(& &1 == nil)
+    trip_updates = Enum.map(raw_tu, & &1.trip_update) |> Enum.reject(&(&1 == nil))
     GenServer.call(pid, {:vehicles_and_trip_updates, group, [], trip_updates, comment})
   end
+
   def new_data(pid, group, vehicle_positions, trip_updates, comment) do
     raw_vp =
       vehicle_positions
-      |> Proto.FeedMessage.decode
+      |> Proto.FeedMessage.decode!()
       |> Map.get(:entity)
 
-    vehicles = Enum.map(raw_vp, & &1.vehicle) |> Enum.reject(& &1 == nil)
+    vehicles = Enum.map(raw_vp, & &1.vehicle) |> Enum.reject(&(&1 == nil))
 
     raw_tu =
       trip_updates
-      |> Proto.FeedMessage.decode
+      |> Proto.FeedMessage.decode!()
       |> Map.get(:entity)
-    trip_updates = Enum.map(raw_tu, & &1.trip_update) |> Enum.reject(& &1 == nil)
+
+    trip_updates = Enum.map(raw_tu, & &1.trip_update) |> Enum.reject(&(&1 == nil))
 
     GenServer.call(pid, {:vehicles_and_trip_updates, group, vehicles, trip_updates, comment})
   end
 
-  @spec vehicles(GenServer.server, term) :: [{String.t, [Proto.vehicle_position]}]
+  @spec vehicles(GenServer.server(), term) :: [{String.t(), [Proto.vehicle_position()]}]
   def vehicles(pid \\ __MODULE__, group)
+
   def vehicles(pid, group) do
     pid
     |> GenServer.call({:vehicles, group})
-    |> Enum.reverse
+    |> Enum.reverse()
   end
 
   def trip_updates(pid \\ __MODULE__, group)
+
   def trip_updates(pid, group) do
     pid
     |> GenServer.call({:trip_updates, group})
-    |> Enum.reverse
+    |> Enum.reverse()
   end
 
   # server callbacks
@@ -102,26 +112,34 @@ defmodule GTFSRealtimeViz.State do
     {:reply, state.trip_updates[group] || [], state}
   end
 
-  def handle_call({:vehicles_and_trip_updates, group, vehicles, trip_updates, comment}, _from, state) do
-    new_trip_updates = update_in(state.trip_updates, [Access.key(group, [])], fn prev_msgs ->
-      max = max_archive()
-      msgs = [{comment, trip_updates} | prev_msgs]
-      if max == :infinity do
-        msgs
-      else
-        Enum.take(msgs, max)
-      end
-    end)
+  def handle_call(
+        {:vehicles_and_trip_updates, group, vehicles, trip_updates, comment},
+        _from,
+        state
+      ) do
+    new_trip_updates =
+      update_in(state.trip_updates, [Access.key(group, [])], fn prev_msgs ->
+        max = max_archive()
+        msgs = [{comment, trip_updates} | prev_msgs]
 
-    new_vehicles = update_in(state.vehicles, [Access.key(group, [])], fn prev_msgs ->
-      max = max_archive()
-      msgs = [{comment, vehicles} | prev_msgs]
-      if max == :infinity do
-        msgs
-      else
-        Enum.take(msgs, max)
-      end
-    end)
+        if max == :infinity do
+          msgs
+        else
+          Enum.take(msgs, max)
+        end
+      end)
+
+    new_vehicles =
+      update_in(state.vehicles, [Access.key(group, [])], fn prev_msgs ->
+        max = max_archive()
+        msgs = [{comment, vehicles} | prev_msgs]
+
+        if max == :infinity do
+          msgs
+        else
+          Enum.take(msgs, max)
+        end
+      end)
 
     {:reply, :ok, %{vehicles: new_vehicles, trip_updates: new_trip_updates}}
   end
